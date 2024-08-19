@@ -47,9 +47,8 @@ class Play extends GameService {
 
             console.log(`User ${socket.id} is connected`)
 
-            console.log(socket.player)
             /* ON CONNECT | PLAYER */
-            if (socket.player.isPlayer) {
+            if (socket.player && socket.player.token && socket.player.isPlayer) {
 
                 const player = { socketId: socket.id, player: socket.player }
                 const playerId = socket.player.playerId
