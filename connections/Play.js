@@ -63,7 +63,7 @@ class Play extends GameService {
                 } else {
                     const playerData = {
                         ...player,
-                        status: "CHOICE",
+                        status: CHOICE,
                         gameInfo: null,
                         ante: 0,
                         bonus: 0,
@@ -203,11 +203,11 @@ class Play extends GameService {
 
                     } 
                     else {
-                        this.reconnection(socket.id, 'transaction')
+                        this.reconnection(playerId, 'transaction')
                     }
 
                 } else {
-                    this.reconnection(socket.id, 'error')
+                    this.reconnection(playerId, 'error')
                 }
             })
 
@@ -571,11 +571,16 @@ class Play extends GameService {
             bonusResult: player.bonusResult,
             result: player.result,
 
-            transactions: player.transactions
+            transactions: player.transactions,
+
+            transactionError: false,
         }
 
         if (reason === 'error') {
             data.error = true
+        }
+        if (reason === 'transaction') {
+            data.transactionError = true
         }
 
         this.socket.in(this.players[id].socketId).emit('reconnection', data)
