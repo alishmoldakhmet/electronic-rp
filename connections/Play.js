@@ -47,6 +47,7 @@ class Play extends GameService {
 
             console.log(`User ${socket.id} is connected`)
 
+            console.log(socket.player)
             /* ON CONNECT | PLAYER */
             if (socket.player.isPlayer) {
 
