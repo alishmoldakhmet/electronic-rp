@@ -692,7 +692,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = [1, 9, 2, 34, 3, 6, 4, 18, 5, 10] //[1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]   //  this.numbers(id, length)
+        const numbers = this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
         numbers.forEach((number, i) => {
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
 
@@ -875,7 +875,7 @@ class Play extends GameService {
             const playerData = this.players[id]
 
             /* Send request to ALICORN SERVICE */
-            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 759601923 : await this.getBalance(player)
+            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 2370000 : await this.getBalance(player)
 
             /* Send the BALANCE to socket client */
             if (balance) {
