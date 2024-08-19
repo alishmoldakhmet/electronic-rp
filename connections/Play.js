@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 /* Services */
 const GameService = require("../services/GameService")
 
@@ -156,12 +158,15 @@ class Play extends GameService {
                     let gameProcesses = []
 
                     let statusText = "ANTE"
+                    
                     if (bonus) {
                         statusText = "ANTE & BONUS"
                     }
 
                     const status = await this.debit(playerId, socket.player, ante, statusText)
+
                     if (status) {
+
                         this.players[playerId].ante = ante
                         this.players[playerId].bonus = bonus
                         this.players[playerId].total = ante + bonus
@@ -191,12 +196,15 @@ class Play extends GameService {
                         this.socket.in(this.players[playerId].socketId).emit("gameInfo", created)
 
                         gameProcesses.push({ gameID: created.id, player: playerId, type: 'ante', reason: 'ANTE', total: parseFloat(ante) })
+
                         if (bonus) {
                             gameProcesses.push({ gameID: created.id, type: 'bonus', reason: 'BONUS', total: parseFloat(bonus) })
                         }
 
                         this.createGameProcesses(gameProcesses)
-                    } else {
+
+                    } 
+                    else {
                         this.reconnection(socket.id, 'transaction')
                     }
 
@@ -679,7 +687,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104] //  this.numbers(id, length)
+        const numbers = this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
         numbers.forEach((number, i) => {
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
 
@@ -792,7 +800,7 @@ class Play extends GameService {
             result = { result: "win", reason: "purchase-no-game", sum: parseInt(player.ante) * 3, anteMultiplier: 0, betMultiplier: 0 }
         }
 
-        if (result.result === "win") {
+        if (result && result.result === "win") {
             let text = "Выигрыш"
             if (result.reason === 'nogame' || result.reason === 'purchase-no-game') {
                 text = "Нет игры"
@@ -802,16 +810,16 @@ class Play extends GameService {
             }, RECONNECT_TIME)
         }
 
-        if (result.result === "draw") {
+        if (result && result.result === "draw") {
             setTimeout(() => {
                 this.credit(id.socketId, player.player, result.sum, 'Ничья')
             }, RECONNECT_TIME)
         }
 
-        if (result.anteMultiplier) {
+        if (result && result.anteMultiplier) {
             this.updateGameProcess(this.players[id].gameData, "ante", player.ante * result.anteMultiplier)
         }
-        if (result.betMultiplier) {
+        if (result && result.betMultiplier) {
             this.updateGameProcess(this.players[id].gameData, "bet", player.ante * 2 * result.betMultiplier)
         }
 
@@ -858,8 +866,7 @@ class Play extends GameService {
             const playerData = this.players[id]
 
             /* Send request to ALICORN SERVICE */
-            // const balance = await this.getBalance(player)
-            const balance = 2370000
+            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 2370000 : await this.getBalance(player)
 
             /* Send the BALANCE to socket client */
             if (balance) {
@@ -1013,7 +1020,7 @@ class Play extends GameService {
             this.errorLog(`Error in Play.js - debit function: ${error.toString()}`)
         }
 
-        return true
+        return process.env.NODE_ENV && process.env.NODE_ENV === "development" ? true : false
     }
 
 
