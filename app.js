@@ -1,3 +1,6 @@
+/* DOTENV */
+require('dotenv').config()
+
 /* Express */
 const express = require('express')
 const cors = require("cors")
@@ -14,7 +17,7 @@ const bearer = require("./middlewares/Bearer")
 const Play = require("./connections/Play")
 
 /* Fields */
-const port = 2000
+const port = process.env.PORT || 8000
 
 /* Create Server */
 const app = express()
@@ -38,7 +41,7 @@ app.use((_, response) => {
 io.use(bearer)
 
 /* Socket connection */
-const play = new Play(io)
+new Play(io)
 
 /* Start server */
 server.listen(port, () => {
