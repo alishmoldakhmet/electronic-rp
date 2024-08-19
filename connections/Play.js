@@ -868,7 +868,7 @@ class Play extends GameService {
             const playerData = this.players[id]
 
             /* Send request to ALICORN SERVICE */
-            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 2370000 : await this.getBalance(player)
+            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 2370000 : 2370000 //await this.getBalance(player)
 
             /* Send the BALANCE to socket client */
             if (balance) {
