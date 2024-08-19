@@ -6,7 +6,15 @@ const { STARTPOINT } = require("../config/integration")
 const balance = data => {
     const uri = `${STARTPOINT}/api/makao_card_games/ow/balance`
     const headers = { headers: { 'content-type': 'application/x-www-form-urlencoded' } }
-    return axios.post(uri, data, headers).then(response => response).catch(data => data.response)
+    console.log(uri)
+    console.log(data)
+    return axios.post(uri, data, headers).then(response => {
+        console.log(response)
+        return response
+    }).catch(data => {
+        console.log(data)
+        return data.response
+    })
 }
 
 /* DEBIT */

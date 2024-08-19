@@ -17,7 +17,7 @@ class Dealer extends Game {
 
         if (this.isFlush() && this.isStraight() === "ROYALSTRAIGHT") {
             return {
-                name: "Роял Флэш",
+                name: "ROYAL FLUSH",
                 code: "ROYALFLUSH",
                 level: 100,
                 multiplier: 100,
@@ -30,7 +30,7 @@ class Dealer extends Game {
             const straight = this.straight()
 
             return {
-                name: "Стрит Флэш",
+                name: "STRAIGHT FLUSH",
                 code: "STRAIGHTFLUSH",
                 level: 50,
                 multiplier: 50,
@@ -43,7 +43,7 @@ class Dealer extends Game {
             const value = this.isFourOfAKind()
 
             return {
-                name: "Каре",
+                name: "FOUR OF A KIND",
                 code: "FOUROFAKIND",
                 level: 20,
                 multiplier: 20,
@@ -58,7 +58,7 @@ class Dealer extends Game {
             const additional = this.pairs()
 
             return {
-                name: "Фул Хаус",
+                name: "FULL HOUSE",
                 code: "FULLHOUSE",
                 level: 20,
                 level: 7,
@@ -71,7 +71,7 @@ class Dealer extends Game {
         }
         else if (this.isFlush()) {
             return {
-                name: "Флэш",
+                name: "FLUSH",
                 code: "FLUSH",
                 level: 5,
                 multiplier: 5,
@@ -83,7 +83,7 @@ class Dealer extends Game {
             const straight = this.straight()
 
             return {
-                name: "Стрит",
+                name: "STRAIGHT",
                 code: "STRAIGHT",
                 level: 4,
                 multiplier: 4,
@@ -96,7 +96,7 @@ class Dealer extends Game {
             const value = this.isThreeOfAKind()
 
             return {
-                name: "Тройка",
+                name: "THREE OF A KIND",
                 code: "THREEOFAKIND",
                 level: 3,
                 multiplier: 3,
@@ -110,7 +110,7 @@ class Dealer extends Game {
             const values = this.pairs().sort(this.recompare)
 
             return {
-                name: "Две пары",
+                name: "TWO PAIRS",
                 code: "TWOPAIRS",
                 level: 2,
                 multiplier: 2,
@@ -125,7 +125,7 @@ class Dealer extends Game {
             const values = this.pairs()
 
             return {
-                name: "Пара",
+                name: "PAIR",
                 code: "PAIR",
                 level: 1,
                 multiplier: 1,
@@ -140,7 +140,7 @@ class Dealer extends Game {
                 let data = this.noGame()
 
                 return {
-                    name: "Туз Король",
+                    name: "ACE KING",
                     code: "ACEKING",
                     level: 1,
                     multiplier: 1,
@@ -151,7 +151,7 @@ class Dealer extends Game {
             }
             
             return {
-                name: "Старшая карта: " + this.rankList[this.rankList.length - 1],
+                name: "High: " + this.rankList[this.rankList.length - 1],
                 code: "NOGAME",
                 level: 0,
                 multiplier: 0,
