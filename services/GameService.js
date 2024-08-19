@@ -287,7 +287,7 @@ class GameService {
     createGameResult = (game, result, multiplier, type) => {
         try {
 
-            if (!game || !result || !multiplier || !type) {
+            if (!game || !result || !type) {
                 this.errorLog(`Error in GameService.js - createGameResult function: Invalid Parameters.`)
                 return
             }
@@ -343,6 +343,25 @@ class GameService {
         catch (error) {
             console.logerror()
             this.errorLog(`Error in GameService.js - updateGameProcess function: ${error.toString()}`)
+        }
+    }
+
+    /* END GAME */
+
+    endDbGame = (game) => {
+        // console.log(game, player, type, win)
+        try {
+
+            if (!game) {
+                this.errorLog(`Error in GameService.js - endGame function: Invalid Parameters.`)
+                return
+            }
+
+            Game.update({ status: 1 }, { where: { id: game.id } })
+        }
+        catch (error) {
+            console.logerror()
+            this.errorLog(`Error in GameService.js - endGame function: ${error.toString()}`)
         }
     }
 
