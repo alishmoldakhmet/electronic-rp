@@ -162,9 +162,27 @@ class Play extends GameService {
                         statusText = "ANTE & BONUS"
                     }
 
-                    const status = await this.debit(playerId, socket.player, ante, statusText)
+                    /* CREATE GAME */
+                    const number = (new Date()).getMilliseconds() + Math.floor(Math.random() * 100000)
 
-                    console.log("Start status: " + status )
+                    const gameData = {
+                        number,
+                        player: playerId,
+                        startBalance: this.players[playerId].balance + ante + bonus,
+                        endBalance: 0,
+                        refund: 0,
+                        endReason: null,
+                        status: 0,
+                        isPaused: 0,
+                        dealt: 0,
+                        isUpdated: 0
+                    }
+
+                    const created = await Game.create(gameData)
+
+                    this.players[playerId].gameData = { id: created.id, number: created.number }
+
+                    const status = await this.debit(playerId, socket.player, ante, statusText, created)
 
                     if (status) {
 
@@ -175,26 +193,6 @@ class Play extends GameService {
                         this.players[playerId].status = DEALING
                         this.generate(playerId, 10)
 
-                        /* CREATE GAME */
-
-                        const number = (new Date()).getMilliseconds() + Math.floor(Math.random() * 100000)
-
-                        const gameData = {
-                            number,
-                            player: playerId,
-                            startBalance: this.players[playerId].balance + ante + bonus,
-                            endBalance: 0,
-                            refund: 0,
-                            endReason: null,
-                            status: 0,
-                            isPaused: 0,
-                            dealt: 0,
-                            isUpdated: 0
-                        }
-
-                        const created = await Game.create(gameData)
-                        console.log("Created", created)
-                        this.players[playerId].gameData = { id: created.id, number: created.number }
                         this.socket.in(this.players[playerId].socketId).emit("gameInfo", created)
 
                         gameProcesses.push({ gameID: created.id, player: playerId, type: 'ante', reason: 'ANTE', total: parseFloat(ante) })
