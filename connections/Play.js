@@ -190,6 +190,7 @@ class Play extends GameService {
                         }
 
                         const created = await Game.create(gameData)
+                        console.log("Created", created)
                         this.players[playerId].gameData = { id: created.id, number: created.number }
                         this.socket.in(this.players[playerId].socketId).emit("gameInfo", created)
 
