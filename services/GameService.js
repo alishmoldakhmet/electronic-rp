@@ -48,6 +48,8 @@ class GameService {
 
         try {
 
+            console.log(type, player, amount, reason, game)
+
             /* Check data */
             if (player && amount && reason && game) {
 
