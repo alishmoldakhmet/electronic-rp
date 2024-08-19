@@ -14,6 +14,7 @@ const Player = require("../game/Player")
 const Dealer = require("../game/Dealer")
 const Additional = require("../game/Additional")
 const Winner = require("../game/Winner")
+const { statSync } = require('fs')
 
 /* Fields */
 const CHOICE = "CHOICE"
@@ -162,6 +163,8 @@ class Play extends GameService {
                     }
 
                     const status = await this.debit(playerId, socket.player, ante, statusText)
+
+                    console.log("Start status: " + status )
 
                     if (status) {
 
