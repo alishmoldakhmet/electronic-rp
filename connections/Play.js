@@ -878,6 +878,7 @@ class Play extends GameService {
 
         }
         catch (error) {
+            console.log(error)
             this.errorLog(`Error in Play.js - updateBalance function: ${error.toString()}`)
         }
 
