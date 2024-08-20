@@ -48,8 +48,6 @@ class GameService {
 
         try {
 
-            console.log(type, player, amount, reason, game)
-
             /* Check data */
             if (player && amount && reason && game) {
 
@@ -332,7 +330,6 @@ class GameService {
 
     /* UPDATE GAME PROCESS */
     updateGameProcess = (game, type, win) => {
-        // console.log(game, player, type, win)
         try {
 
             if (!game || !type || !win) {
@@ -343,7 +340,6 @@ class GameService {
             GameProcess.update({ win: win }, { where: { gameID: game.id, type: type } })
         }
         catch (error) {
-            console.logerror()
             this.errorLog(`Error in GameService.js - updateGameProcess function: ${error.toString()}`)
         }
     }
@@ -351,7 +347,6 @@ class GameService {
     /* END GAME */
 
     endDbGame = (game) => {
-        // console.log(game, player, type, win)
         try {
 
             if (!game) {
@@ -362,7 +357,6 @@ class GameService {
             Game.update({ status: 1 }, { where: { id: game.id } })
         }
         catch (error) {
-            console.logerror()
             this.errorLog(`Error in GameService.js - endGame function: ${error.toString()}`)
         }
     }
@@ -370,8 +364,6 @@ class GameService {
     /* Continue */
     continueGame = game => {
         try {
-
-            console.log("Updated Game")
 
             if (!game) {
                 this.errorLog(`Error in GameService.js - continueGame function: Invalid Parameters.`)
