@@ -55,6 +55,11 @@ class Play extends GameService {
                 const playerId = socket.player.playerId
 
                 if (this.players[playerId]) {
+
+                    if (socket.player.uniqueId !== this.players[playerId].uniqueId) {
+                        this.socket.in(this.players[playerId].socketId).emit("newDeviceConnection", "ok")
+                    }
+
                     this.players[playerId].socketId = socket.id
                     this.players[playerId].player = socket.player
                     this.players[playerId].uniqueId = socket.player.uniqueId
