@@ -18,7 +18,7 @@ class Six extends Game {
 
         if (this.isFlush() && this.isStraight() === "ROYALSTRAIGHT") {
             data.push({
-                name: "Роял Флэш",
+                name: "ROYAL FLUSH",
                 code: "ROYALFLUSH",
                 level: 100,
                 multiplier: 100,
@@ -31,7 +31,7 @@ class Six extends Game {
             const straight = this.straight()
 
             data.push({
-                name: "Стрит Флэш",
+                name: "STRAIGHT FLUSH",
                 code: "STRAIGHTFLUSH",
                 level: 50,
                 multiplier: 50,
@@ -44,7 +44,7 @@ class Six extends Game {
             const value = this.isFourOfAKind()
 
             data.push({
-                name: "Каре",
+                name: "FOUR OF A KIND",
                 code: "FOUROFAKIND",
                 level: 20,
                 multiplier: 20,
@@ -59,7 +59,7 @@ class Six extends Game {
             const additional = this.pairs()
 
             data.push({
-                name: "Фул Хаус",
+                name: "FULL HOUSE",
                 code: "FULLHOUSE",
                 level: 20,
                 level: 7,
@@ -73,7 +73,7 @@ class Six extends Game {
         else if (this.isFlush()) {
             if (this.isStraight() !== "ROYALSTRAIGHT" || this.isStraight() !== "STRAIGHT") {
                 data.push({
-                    name: "Флэш",
+                    name: "FLUSH",
                     code: "FLUSH",
                     level: 5,
                     multiplier: 5,
@@ -86,7 +86,7 @@ class Six extends Game {
             const straight = this.straight()
 
             data.push({
-                name: "Стрит",
+                name: "STRAIGHT",
                 code: "STRAIGHT",
                 level: 4,
                 multiplier: 4,
@@ -99,7 +99,7 @@ class Six extends Game {
             const value = this.isThreeOfAKind()
 
             data.push({
-                name: "Тройка",
+                name: "THREE OF A KIND",
                 code: "THREEOFAKIND",
                 level: 3,
                 multiplier: 3,
@@ -113,7 +113,7 @@ class Six extends Game {
             const values = this.pairs().sort(this.recompare)
 
             data.push({
-                name: "Две пары",
+                name: "TWO PAIRS",
                 code: "TWOPAIRS",
                 level: 2,
                 multiplier: 2,
@@ -128,7 +128,7 @@ class Six extends Game {
             const values = this.pairs()
 
             data.push({
-                name: "Пара",
+                name: "PAIR",
                 code: "PAIR",
                 level: 1,
                 multiplier: 1,
@@ -141,9 +141,8 @@ class Six extends Game {
 
             let element = this.noGame()
 
-
             data.push({
-                name: "Туз Король",
+                name: "ACE KING",
                 code: "ACEKING",
                 level: 1,
                 multiplier: 1,
