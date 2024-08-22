@@ -14,7 +14,6 @@ const Player = require("../game/Player")
 const Dealer = require("../game/Dealer")
 const Additional = require("../game/Additional")
 const Winner = require("../game/Winner")
-const { statSync } = require('fs')
 
 /* Fields */
 const CHOICE = "CHOICE"
@@ -162,9 +161,11 @@ class Play extends GameService {
                     let gameProcesses = []
 
                     let statusText = "ANTE"
+                    let total = ante
                     
                     if (bonus) {
                         statusText = "ANTE & BONUS"
+                        total = ante + bonus
                     }
 
                     /* CREATE GAME */
@@ -187,7 +188,7 @@ class Play extends GameService {
 
                     this.players[playerId].gameData = { id: created.id, number: created.number }
 
-                    const status = await this.debit(playerId, socket.player, ante, statusText, created)
+                    const status = await this.debit(playerId, socket.player, total, statusText, created)
 
                     if (status) {
 
@@ -225,12 +226,12 @@ class Play extends GameService {
 
                 const player = this.players[id]
                 if (player) {
-                    const status = await this.debit(id, player.player, player.ante, "6-КАРТА")
+                    const status = await this.debit(id, player.player, player.ante, "6-CARD")
                     if (status) {
                         this.players[id].sixth = true
                         this.players[id].used = true
 
-                        this.createGameProcess(this.players[id].gameData, id, "sixth", "6-КАРТА", 0)
+                        this.createGameProcess(this.players[id].gameData, id, "sixth", "6-CARD", 0)
 
                         const numbers = this.numbers(id, 1)
 
@@ -280,10 +281,10 @@ class Play extends GameService {
 
                 const player = this.players[id]
                 if (player) {
-                    const status = await this.debit(id, player.player, player.ante, "ОБМЕН")
+                    const status = await this.debit(id, player.player, player.ante, "EXCHANGE")
                     if (status) {
 
-                        this.createGameProcess(this.players[id].gameData, id, "exchange", "ОБМЕН", player.ante)
+                        this.createGameProcess(this.players[id].gameData, id, "exchange", "EXCHANGE", player.ante)
 
                         const playerCards = this.players[id].playerCards
 
@@ -344,9 +345,9 @@ class Play extends GameService {
                 const id = socket.player.playerId
                 const player = this.players[id]
                 if (player) {
-                    const status = await this.debit(id, player.player, value, "СТРАХОВКА")
+                    const status = await this.debit(id, player.player, value, "INSURANCE")
                     if (status) {
-                        this.createGameProcess(this.players[id].gameData, id, "insurance", "СТРАХОВКА", value)
+                        this.createGameProcess(this.players[id].gameData, id, "insurance", "INSURANCE", value)
                         this.players[id].insurance = value
                     }
                     else {
@@ -366,7 +367,7 @@ class Play extends GameService {
                 const sixthGame = player.sixthGame
 
                 if (player) {
-                    const status = await this.debit(id, player.player, player.ante, "ОБМЕН")
+                    const status = await this.debit(id, player.player, player.ante * 2, "BET")
                     if (status) {
 
                         this.createGameProcess(this.players[id].gameData, id, "bet", "BET", player.ante * 2)
@@ -399,7 +400,8 @@ class Play extends GameService {
                                 this.socket.in(this.players[id].socketId).emit("purchase", data)
                             }, RECONNECT_TIME)
 
-                        } else {
+                        } 
+                        else {
                             this.play(id, socketPlayer, hand)
                         }
 
@@ -418,7 +420,7 @@ class Play extends GameService {
                 this.players[id].pass = true
                 this.players[id].status = DEALING
 
-                this.createGameProcess(this.players[id].gameData, id, "pass", "ПАСС", 0)
+                this.createGameProcess(this.players[id].gameData, id, "pass", "FOLD", 0)
 
                 const result = { result: "lose", reason: "fold", sum: 0 }
 
@@ -452,10 +454,10 @@ class Play extends GameService {
                 if (player) {
 
                     if (data === "yes") {
-                        const status = await this.debit(id, player.player, player.ante, "ПОКУПКА ИГРЫ ДЛЯ ДИЛЕРА")
+                        const status = await this.debit(id, player.player, player.ante, "PURCHASE OF A GAME FOR A DEALER")
                         if (status) {
 
-                            this.createGameProcess(this.players[id].gameData, id, "purchase", "ПОКУПКА ИГРЫ ДЛЯ ДИЛЕРА", player.ante)
+                            this.createGameProcess(this.players[id].gameData, id, "purchase", "PURCHASE OF A GAME FOR A DEALER", player.ante)
 
                             this.players[id].purchase = true
 
@@ -498,7 +500,7 @@ class Play extends GameService {
                     } else {
                         const result = { result: "win", reason: "nogame", sum: parseInt(player.ante) * 4, anteMultiplier: 1, betMultiplier: 0 }
 
-                        this.credit(id, player.player, parseInt(player.ante) * 4, 'Ничья')
+                        this.credit(id, player.player, parseInt(player.ante) * 4, 'DRAW')
 
                         this.updateGameProcess(this.players[id].gameData, "ante", player.ante * 2)
 
@@ -652,11 +654,15 @@ class Play extends GameService {
             }
 
             this.players[id].insuranceStatus = status
+            const maxPay = player && player.player && player.player.maxPay ? parseFloat(player.player.maxPay) : 0
+            const bonus = player && player.bonusResult && player.bonusResult.total ? parseFloat(player.bonusResult.total) : 0
+            const win = parseFloat(player.insurance) * 2
+            const total = win >= (maxPay - bonus) ? (maxPay - bonus) : win
 
             setTimeout(() => {
                 this.socket.in(this.players[id].socketId).emit("insuranceStatus", status)
-                this.credit(player, player.player, player.insurance * 2, 'Выигрыш от страховки')
-                this.updateGameProcess(this.players[id].gameData, "insurance", player.insurance * 2)
+                this.credit(id, player.player, total, 'Insurance Benefits')
+                this.updateGameProcess(this.players[id].gameData, "insurance", total)
             }, RECONNECT_TIME)
         }
 
@@ -699,9 +705,11 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
+        const numbers =  this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
         numbers.forEach((number, i) => {
+
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
+            const playerData = this.players[id]
 
             const uuid = uuidv4()
 
@@ -721,24 +729,31 @@ class Play extends GameService {
                     const playerCards = this.players[id].playerCards
 
                     if (playerCards.length === 5) {
+
                         const player = new Player(playerCards)
                         const hand = player.hand()
-
 
                         let bonusResult = null
 
                         if (this.players[id].bonus) {
                             if (hand.bonus) {
-                                bonusResult = { result: "win", bonusMultiplier: hand.bonus }
+
+                                const maxPay = playerData.player.maxPay ? parseFloat(playerData.player.maxPay) : 0
+                                const win = parseFloat(this.players[id].bonus) * parseFloat(hand.bonus)
+                                const total = win >= maxPay ? maxPay : win
+
+                                bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: total }
+
                                 this.players[id].bonusResult = bonusResult
-                                this.updateGameProcess(this.players[id].gameData, "bonus", this.players[id].bonus * hand.bonus)
+                                this.updateGameProcess(this.players[id].gameData, "bonus", total)
 
                                 setTimeout(() => {
-                                    this.credit(id, player.player, this.players[id].bonus * hand.bonus, 'Выигрыш от бонуса')
+                                    this.credit(id, playerData.player, total, 'Bonus winnings')
                                 }, RECONNECT_TIME)
 
-                            } else {
-                                bonusResult = { result: "lose", bonusMultiplier: 0 }
+                            } 
+                            else {
+                                bonusResult = { result: "lose", bonusMultiplier: 0, total: 0 }
                                 this.players[id].bonusResult = bonusResult
                             }
                         }
@@ -749,9 +764,11 @@ class Play extends GameService {
                         this.createGameCards(this.players[id].gameData, playerCards, "player")
 
                         setTimeout(() => {
+
                             if (bonusResult) {
                                 this.socket.in(this.players[id].socketId).emit("bonusResult", bonusResult)
                             }
+
                             this.socket.in(this.players[id].socketId).emit("playerGame", hand)
 
                         }, RECONNECT_TIME)
@@ -793,7 +810,6 @@ class Play extends GameService {
         const game = sixthGame.length > 0 ? sixthGame[0] : playerGame
         const second = sixthGame.length > 1 ? sixthGame[1] : null
 
-
         let gameName = game.name
         let gameMultiplier = game.multiplier
         if (second) {
@@ -802,21 +818,19 @@ class Play extends GameService {
         }
 
         this.createGameResult(player.gameData, gameName, gameMultiplier, "player")
-
         this.createGameResult(player.gameData, dealerGame.name, dealerGame.multiplier, "dealer")
 
-
         const winner = new Winner()
-        let result = winner.play({ ante: player.ante, game, second, player: { maxPay: 10000 } }, dealerGame)
+        let result = winner.play({ ante: player.ante, game, second, player: { maxPay: player.player.maxPay }, bonusResult: player.bonusResult, insuranceStatus: player.insuranceStatus, insurance: player.insurance }, dealerGame)
 
         if (withPurchase && dealerGame.level === 0) {
             result = { result: "win", reason: "purchase-no-game", sum: parseInt(player.ante) * 3, anteMultiplier: 0, betMultiplier: 0 }
         }
 
         if (result && result.result === "win") {
-            let text = "Выигрыш"
+            let text = "Win"
             if (result.reason === 'nogame' || result.reason === 'purchase-no-game') {
-                text = "Нет игры"
+                text = "Win"
             }
             setTimeout(() => {
                 this.credit(id, player.player, result.sum, text)
@@ -825,7 +839,7 @@ class Play extends GameService {
 
         if (result && result.result === "draw") {
             setTimeout(() => {
-                this.credit(id.socketId, player.player, result.sum, 'Ничья')
+                this.credit(id, player.player, result.sum, 'Draw')
             }, RECONNECT_TIME)
         }
 
@@ -847,7 +861,6 @@ class Play extends GameService {
         setTimeout(() => {
             this.socket.in(this.players[id].socketId).emit("dealerData", data)
         }, RECONNECT_TIME)
-
 
         this.endGame(id, socketPlayer)
     }

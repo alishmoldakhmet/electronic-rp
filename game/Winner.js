@@ -3,11 +3,14 @@ class Winner {
     play = (player, dealer) => {
 
         /* Max pay */
+        const bonus = player && player.bonusResult && player.bonusResult.total ? parseFloat(player.bonusResult.total) : 0
         let maxPay = parseInt(player.player.maxPay ? player.player.maxPay : 0)
-
+        
         if (player.insuranceStatus === "win") {
             maxPay = maxPay - player.insurance
         }
+
+        maxPay = maxPay - bonus
 
         /* Fields */
         const dealerLevel = parseInt(dealer.level)
