@@ -70,7 +70,7 @@ class Play extends GameService {
                     const playerData = {
                         ...player,
                         status: CHOICE,
-                        gameInfo: null,
+                        gameData: null,
                         ante: 0,
                         bonus: 0,
                         total: 0,
@@ -554,7 +554,7 @@ class Play extends GameService {
 
         let data = {
             status: player.status,
-            gameInfo: player.gameInfo,
+            gameInfo: player.gameData,
             ante: player.ante,
             bonus: player.bonus,
             total: player.total,
@@ -602,7 +602,7 @@ class Play extends GameService {
             socketId,
             player: socketPlayer,
             status: CHOICE,
-            gameInfo: null,
+            gameData: null,
             ante: 0,
             bonus: 0,
             total: 0,
@@ -667,6 +667,7 @@ class Play extends GameService {
     numbers = (id, length = 10) => {
 
         if (this.players[id]) {
+
             let playerCards = this.players[id].playerCards
             let dealerCards = this.players[id].dealerCards
 
@@ -689,7 +690,8 @@ class Play extends GameService {
 
             return numbers
 
-        } else {
+        } 
+        else {
             console.log('error with numbers func - user not exist')
         }
     }
