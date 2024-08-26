@@ -174,7 +174,7 @@ class Play extends GameService {
                     const gameData = {
                         number,
                         player: playerId,
-                        startBalance: this.players[playerId].balance + ante + bonus,
+                        startBalance: this.players[playerId].balance,
                         endBalance: 0,
                         refund: 0,
                         endReason: null,
@@ -922,7 +922,7 @@ class Play extends GameService {
 
             /* Send the BALANCE to socket client */
             if (balance) {
-                this.players[id].balance = balance
+                playerData.balance = balance
                 this.socket.in(playerData.socketId).emit("balance", balance)
             }
 
