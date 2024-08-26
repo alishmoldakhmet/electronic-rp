@@ -171,10 +171,13 @@ class Play extends GameService {
                     /* CREATE GAME */
                     const number = (new Date()).getMilliseconds() + Math.floor(Math.random() * 100000)
 
+                    const balance = await this.updateBalance(playerId, socket.player)
+                    console.log(balance)
+
                     const gameData = {
                         number,
                         player: playerId,
-                        startBalance: this.players[playerId].balance,
+                        startBalance: balance,
                         endBalance: 0,
                         refund: 0,
                         endReason: null,
@@ -922,10 +925,11 @@ class Play extends GameService {
 
             /* Send the BALANCE to socket client */
             if (balance) {
-                playerData.balance = balance
+                this.players[id].balance = balance
                 this.socket.in(playerData.socketId).emit("balance", balance)
             }
 
+            return balance
         }
         catch (error) {
             this.errorLog(`Error in Play.js - updateBalance function: ${error.toString()}`)
