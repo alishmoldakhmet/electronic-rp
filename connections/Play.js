@@ -261,9 +261,9 @@ class Play extends GameService {
 
                                 this.players[id].status = GAME
 
-                                setTimeout(() => {
-                                    this.socket.in(this.players[id].socketId).emit("sixthGame", hand)
-                                }, RECONNECT_TIME)
+                                //setTimeout(() => {
+                                this.socket.in(this.players[id].socketId).emit("sixthGame", hand)
+                                //}, RECONNECT_TIME)
 
                             }
                         })
@@ -325,9 +325,9 @@ class Play extends GameService {
 
                                         this.players[id].playerGame = hand
 
-                                        setTimeout(() => {
-                                            this.socket.in(this.players[id].socketId).emit("playerGame", hand)
-                                        }, RECONNECT_TIME)
+                                        //setTimeout(() => {
+                                        this.socket.in(this.players[id].socketId).emit("playerGame", hand)
+                                        //}, RECONNECT_TIME)
 
                                     }
                                 }, (i + 1) * 400)
