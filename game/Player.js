@@ -3,7 +3,7 @@
 const Game = require("./Game")
 
 class Player extends Game {
-    
+
     hand = () => {
 
         if (this.list.length !== 5) {
@@ -167,7 +167,7 @@ class Player extends Game {
                     strength: this.strength()
                 }
             }
-            
+
             return {
                 name: "Hight: " + this.rankList[this.rankList.length - 1],
                 code: "NOGAME",
