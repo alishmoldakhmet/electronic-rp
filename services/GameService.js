@@ -219,20 +219,20 @@ class GameService {
     }
 
     /* CREATE GAME CARD | DB */
-    createGameCards = (game, cards, type) => {
-        
+    createGameCards = (game, cards, type, status) => {
+
         let tempCards = []
 
         try {
 
-            if (!game || !cards || !type) {
+            if (!game || !cards || !type || !status) {
                 this.errorLog(`Error in GameService.js - createGameCard function: Invalid Parameters.`)
                 return
             }
 
             if (Array.isArray(cards) && cards.length > 0) {
                 cards.forEach(card => {
-                    tempCards.push({ gameID: game.id, cardID: card.id, image: card.image, type })
+                    tempCards.push({ gameID: game.id, cardID: card.id, image: card.image, type, status })
                 })
             }
             GameCard.bulkCreate(tempCards)

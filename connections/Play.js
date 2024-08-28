@@ -251,12 +251,9 @@ class Play extends GameService {
 
                                 let sixthCardArray = []
                                 sixthCardArray.push(card)
-                                this.createGameCards(this.players[id].gameData, sixthCardArray, "sixth")
+                                this.createGameCards(this.players[id].gameData, sixthCardArray, "player", "sixth")
 
-                                //setTimeout(() => {
                                 this.socket.in(this.players[id].socketId).emit("player", card)
-                                //}, RECONNECT_TIME)
-
                                 const additional = new Additional(this.players[id].playerCards)
                                 const hand = additional.get()
 
@@ -319,7 +316,7 @@ class Play extends GameService {
 
                                     if (exchanged.length === i + 1) {
 
-                                        this.createGameCards(this.players[id].gameData, tempCards, "exchange")
+                                        this.createGameCards(this.players[id].gameData, tempCards, "player", "exchange")
 
                                         const data = [...remaining, ...tempCards]
                                         const player = new Player(data)
@@ -501,17 +498,17 @@ class Play extends GameService {
 
                                     const card = { ...this.cards[index], isPurchase: true, uuid: uuidv4() }
                                     const hand = this.getDealerGame(id)
-                                    let purchaseCardArray = [card.id]
+                                    let purchaseCardArray = [{ id: card.id, image: card.image }]
 
-                                    this.updateGameCards(this.players[id].gameData, purchaseCardArray, "purchase")
+                                    this.createGameCards(this.players[id].gameData, purchaseCardArray, "dealer", "purchase")
 
                                     this.players[id].dealerCards.push(card)
                                     this.socket.in(this.players[id].socketId).emit("dealer", card)
 
                                     let dealerCards = hand.data
-                                    dealerCards.shift()
                                     let removedCardArray = [dealerCards[0].id]
                                     this.updateGameCards(this.players[id].gameData, removedCardArray, "removed")
+                                    dealerCards.shift()
 
                                     const dealer = new Dealer([...dealerCards, card])
                                     const game = dealer.hand()
@@ -529,13 +526,29 @@ class Play extends GameService {
                     /* Does not have a purchase */
                     else {
 
+                        const playerGame = player.playerGame
+                        const sixthGame = player.sixthGame
+                        const dealerGame = player.dealerGame
+
+                        const game = sixthGame.length > 0 ? sixthGame[0] : playerGame
+                        const second = sixthGame.length > 1 ? sixthGame[1] : null
+
+                        let gameName = game.name
+                        let gameMultiplier = parseInt(game.multiplier)
+
+                        if (second) {
+                            gameName = gameName + " + " + second.name
+                            gameMultiplier = gameMultiplier + parseInt(second.multiplier)
+                        }
+
                         const result = { result: "win", reason: "nogame", sum: parseInt(player.ante) * 4, anteMultiplier: 1, betMultiplier: 0 }
 
                         this.credit(id, player.player, parseInt(player.ante) * 4, 'DRAW')
 
                         this.updateGameProcess(this.players[id].gameData, "ante", player.ante * 2)
                         this.updateGameProcess(this.players[id].gameData, "bet", player.ante * 2)
-                        this.createGameResult(player.gameData, player.dealerGame.name, player.dealerGame.multiplier, "dealer")
+                        this.createGameResult(player.gameData, dealerGame.name, dealerGame.multiplier, "dealer")
+                        this.createGameResult(player.gameData, gameName, gameMultiplier, "player")
 
                         this.players[id].result = result
                         this.socket.in(this.players[id].socketId).emit("result", result)
@@ -727,7 +740,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
+        const numbers = [1, 6, 2, 7, 3, 8, 4, 9, 5, 29]// this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
         numbers.forEach((number, i) => {
 
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
@@ -779,7 +792,7 @@ class Play extends GameService {
                         this.players[id].playerGame = hand
                         this.players[id].status = GAME
 
-                        this.createGameCards(this.players[id].gameData, playerCards, "player")
+                        this.createGameCards(this.players[id].gameData, playerCards, "player", "default")
 
                         if (bonusResult) {
                             this.socket.in(this.players[id].socketId).emit("bonusResult", bonusResult)
@@ -798,7 +811,7 @@ class Play extends GameService {
                     }
 
                     if (this.players[id].dealerCards.length === 5) {
-                        this.createGameCards(this.players[id].gameData, this.players[id].dealerCards, "dealer")
+                        this.createGameCards(this.players[id].gameData, this.players[id].dealerCards, "dealer", "default")
                     }
 
                     this.players[id].tempDealerCards.push(dealerTempCard)
@@ -848,8 +861,8 @@ class Play extends GameService {
                 this.credit(id, player.player, result.sum, text)
             }, RECONNECT_TIME)
 
-            let anteValue = player.ante
-            let betValue = player.ante
+            let anteValue = parseFloat(player.ante)
+            let betValue = parseFloat(player.ante) * 2
             const maxPay = player.player.maxPay
 
             if (result.anteMultiplier && result.anteMultiplier > 0) {
@@ -857,13 +870,13 @@ class Play extends GameService {
             }
 
             if (result.betMultiplier && result.betMultiplier > 0) {
-                betValue = betValue + player.ante * result.betMultiplier * 2
+                const betWin = player.ante * result.betMultiplier * 2
+                const totalWin = betWin > maxPay ? maxPay : betWin
+                betValue = parseFloat(betValue) + parseFloat(totalWin)
             }
 
-            betValue = betValue > maxPay ? maxPay : betValue
-
             this.updateGameProcess(this.players[id].gameData, "ante", anteValue)
-            this.updateGameProcess(this.players[id].gameData, "ante", betValue)
+            this.updateGameProcess(this.players[id].gameData, "bet", betValue)
         }
 
         this.players[id].result = result
@@ -907,7 +920,7 @@ class Play extends GameService {
             const playerData = this.players[id]
 
             /* Send request to ALICORN SERVICE */
-            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 2370000 : await this.getBalance(player)
+            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
 
             /* Send the BALANCE to socket client */
             if (balance) {
