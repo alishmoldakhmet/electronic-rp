@@ -253,7 +253,7 @@ class Play extends GameService {
                                 sixthCardArray.push(card)
                                 this.createGameCards(this.players[id].gameData, sixthCardArray, "player", "sixth")
 
-                                this.socket.in(this.players[id].socketId).emit("player", card)
+                                this.sendCard(id, "player", card)
                                 const additional = new Additional(this.players[id].playerCards)
                                 const hand = additional.get()
 
@@ -312,7 +312,7 @@ class Play extends GameService {
                                     this.players[id].playerCards.push(card)
                                     tempCards.push(this.cards[index])
 
-                                    this.socket.in(this.players[id].socketId).emit("player", card)
+                                    this.sendCard(id, "player", card)
 
                                     if (exchanged.length === i + 1) {
 
@@ -503,7 +503,6 @@ class Play extends GameService {
                                     this.createGameCards(this.players[id].gameData, purchaseCardArray, "dealer", "purchase")
 
                                     this.players[id].dealerCards.push(card)
-                                    this.socket.in(this.players[id].socketId).emit("dealer", card)
 
                                     let dealerCards = hand.data
                                     let removedCardArray = [dealerCards[0].id]
@@ -550,6 +549,8 @@ class Play extends GameService {
                         this.createGameResult(player.gameData, dealerGame.name, dealerGame.multiplier, "dealer")
                         this.createGameResult(player.gameData, gameName, gameMultiplier, "player")
 
+                        this.createGameResult(player.gameData, player.dealerGame.name, player.dealerGame.multiplier, "dealer")
+
                         this.players[id].result = result
                         this.socket.in(this.players[id].socketId).emit("result", result)
                         this.endGame(id, socketPlayer)
@@ -592,8 +593,8 @@ class Play extends GameService {
             ante: player.ante,
             bonus: player.bonus,
             total: player.total,
-            playerCards: player.playerCards,
-            dealerCards: player.dealerGame ? player.dealerCards : player.tempDealerCards,
+            playerCards: this.players[id].playerCards,
+            dealerCards: player.dealerGame ? this.players[id].dealerCards : this.players[id].tempDealerCards,
             exchangeCards: player.exchangeCards,
             bet: player.bet,
             pass: player.pass,
@@ -696,12 +697,20 @@ class Play extends GameService {
                 }
 
                 this.socket.in(this.players[id].socketId).emit("insuranceStatus", status)
-
             }, RECONNECT_TIME)
 
         }
 
         return game
+    }
+
+    /* Send dealer and player cards */
+    sendCard = (id, type, card) => {
+        this.socket.in(this.players[id].socketId).emit(type, card)
+        setTimeout(() => {
+            this.socket.in(this.players[id].socketId).emit(type, card)
+        }, RECONNECT_TIME)
+
     }
 
     /* NUMBERS */
@@ -757,7 +766,7 @@ class Play extends GameService {
 
                     this.players[id].playerCards.push(card)
 
-                    this.socket.in(this.players[id].socketId).emit("player", card)
+                    this.sendCard(id, "player", card)
 
                     const playerCards = this.players[id].playerCards
 
@@ -816,7 +825,7 @@ class Play extends GameService {
 
                     this.players[id].tempDealerCards.push(dealerTempCard)
 
-                    this.socket.in(this.players[id].socketId).emit("dealer", dealerTempCard)
+                    this.sendCard(id, "dealer", dealerTempCard)
                 }
 
             }, (i + 1) * 400)
@@ -834,6 +843,7 @@ class Play extends GameService {
 
         const game = sixthGame.length > 0 ? sixthGame[0] : playerGame
         const second = sixthGame.length > 1 ? sixthGame[1] : null
+
 
         let gameName = game.name
         let gameMultiplier = game.multiplier
