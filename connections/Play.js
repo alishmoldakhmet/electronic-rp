@@ -65,7 +65,8 @@ class Play extends GameService {
 
                     this.reconnection(playerId, 'constructor')
 
-                } else {
+                }
+                else {
                     const playerData = {
                         ...player,
                         status: CHOICE,
@@ -567,9 +568,33 @@ class Play extends GameService {
             */
 
             /* END GAME EVENT | ADMIN */
-            socket.on("end", () => {
+            socket.on("end", ({ playerID }) => {
+                if (playerID) {
+                    const player = this.players[playerID]
 
+                    if (player) {
+                        this.players[playerID].status = CHOICE
+                        this.clearPlayerData(playerID, player.player)
+                        this.socket.in(player.socketId).emit("forceEnd")
+                    }
+                }
             })
+
+            /* NOTIFICATION EVENT | ADMIN */
+            socket.on("adminNotification", data => {
+                if (data.playerID) {
+                    const player = this.players[data.playerID]
+
+                    if (player) {
+                        const timer = setTimeout(() => {
+                            this.socket.in(player.socketId).emit("adminNotification", data)
+                            clearTimeout(timer)
+                        }, RECONNECT_TIME)
+                    }
+                }
+            })
+
+
 
         })
 
