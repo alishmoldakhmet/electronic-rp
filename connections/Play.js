@@ -717,7 +717,7 @@ class Play extends GameService {
 
                 if (status === "win") {
                     const total = parseFloat(player.insurance) * 2
-                    this.credit(id, player.player, total, 'Insurance Benefits')
+                    this.credit(id, player.player, total, 'INSURANCE WIN')
                     this.updateGameProcess(this.players[id].gameData, "insurance", total)
                 }
 
@@ -814,7 +814,7 @@ class Play extends GameService {
                                 this.players[id].bonusResult = bonusResult
                                 this.updateGameProcess(this.players[id].gameData, "bonus", total)
 
-                                this.credit(id, playerData.player, total, 'Bonus winnings')
+                                this.credit(id, playerData.player, total, 'BONUS WIN')
 
                             }
                             else {
@@ -890,7 +890,7 @@ class Play extends GameService {
 
         if (result && (result.result === "win" || result.result === "draw")) {
 
-            const text = result.result === "win" ? "Win" : "Draw"
+            const text = result.result === "win" ? "WIN" : "DRAW"
 
             setTimeout(() => {
                 this.credit(id, player.player, result.sum, text)
