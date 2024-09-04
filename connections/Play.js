@@ -550,8 +550,6 @@ class Play extends GameService {
                         this.createGameResult(player.gameData, dealerGame.name, dealerGame.multiplier, "dealer")
                         this.createGameResult(player.gameData, gameName, gameMultiplier, "player")
 
-                        this.createGameResult(player.gameData, player.dealerGame.name, player.dealerGame.multiplier, "dealer")
-
                         this.players[id].result = result
                         this.socket.in(this.players[id].socketId).emit("result", result)
                         this.endGame(id, socketPlayer)
@@ -860,7 +858,7 @@ class Play extends GameService {
 
     /* PLAY */
     play = (id, socketPlayer, dealerGame, withPurchase = false) => {
-
+        
         const player = this.players[id]
         const dealerCards = player.dealerCards
         const playerGame = player.playerGame
