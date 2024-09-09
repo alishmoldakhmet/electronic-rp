@@ -997,7 +997,7 @@ class Play extends GameService {
                 const credit = await this.createCredit(player, amount, transaction.number)
 
                 /* If the request is OK */
-                if (credit && credit.status === 200 && credit.data.status === "OK") {
+                if (credit && credit.status === 200 && credit.data && credit.data.status === "OK") {
 
                     /* Update balance */
                     await this.updateBalance(id, player)
@@ -1006,7 +1006,7 @@ class Play extends GameService {
                     this.socket.in(this.players[id].socketId).emit("editTransaction", { number: transaction.number, status: 1 })
 
                     /* UPDATE TRANSACTION in DB */
-                    this.updateTransaction(transaction.number, JSON.stringify(credit.data), 1)
+                    this.updateTransaction(transaction.number, credit.data ? JSON.stringify(credit.data) : "", 1)
 
                     if (this.players[id]) {
                         const ind = this.players[id].transactions.findIndex(e => e.number === transaction.number)
@@ -1023,7 +1023,7 @@ class Play extends GameService {
                     this.socket.in(this.players[id].socketId).emit("editTransaction", { number: transaction.number, status: 2 })
 
                     /* UPDATE TRANSACTION in DB */
-                    this.updateTransaction(transaction.number, JSON.stringify(credit.data), 2)
+                    this.updateTransaction(transaction.number, credit.data ? JSON.stringify(credit.data) : "", 2)
 
                     if (this.players[id]) {
                         const ind = this.players[id].transactions.findIndex(e => e.number === transaction.number)
@@ -1067,7 +1067,7 @@ class Play extends GameService {
                 const debit = await this.createDebit(player, amount, transaction.number)
 
                 /* If the request is OK */
-                if (debit && debit.status === 200 && debit.data.status === "OK") {
+                if (debit && debit.status === 200 && debit.data && debit.data.status === "OK") {
 
                     /* Update balance */
                     await this.updateBalance(id, player)
@@ -1076,7 +1076,7 @@ class Play extends GameService {
                     this.socket.in(this.players[id].socketId).emit("editTransaction", { number: transaction.number, status: 1 })
 
                     /* UPDATE TRANSACTION in DB */
-                    this.updateTransaction(transaction.number, JSON.stringify(debit.data), 1)
+                    this.updateTransaction(transaction.number, debit.data ? JSON.stringify(debit.data) : "", 1)
 
                     if (this.players[id]) {
                         const ind = this.players[id].transactions.findIndex(e => e.number === transaction.number)
@@ -1093,7 +1093,7 @@ class Play extends GameService {
                     this.socket.in(id).emit("editTransaction", { number: transaction.number, status: 2 })
 
                     /* UPDATE TRANSACTION in DB */
-                    this.updateTransaction(transaction.number, JSON.stringify(debit.data), 2)
+                    this.updateTransaction(transaction.number, debit.data ? JSON.stringify(debit.data) : "", 2)
 
                     if (this.players[id]) {
                         const ind = this.players[id].transactions.findIndex(e => e.number === transaction.number)
