@@ -1,8 +1,5 @@
-/* Sequelize */
-const Sequelize = require("sequelize")
-
 /* Models */
-const { Log, Table, sequelize, Transaction, Game, GameCard, GameProcess, GameResult } = require("../db/models")
+const { Log, Player, Transaction, Game, GameCard, GameProcess, GameResult } = require("../db/models")
 
 /* Fields */
 const { TABLE } = require("../config/table")
@@ -16,10 +13,6 @@ const { sendDebit, sendCredit, balance } = require("../api/PlayerApi")
 
 /* Game Services */
 class GameService {
-
-    playerAuthentication = async socket => {
-
-    }
 
     /* CREATE LOG SERVICE */
     errorLog = error => {
@@ -112,10 +105,12 @@ class GameService {
             /* Check data */
             if (player) {
 
+                const last = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
+
                 /* BALANCE REST API FIELDS */
                 const uuid = uuidv4()
                 const data = {
-                    sid: player.sid,
+                    sid: last.sid,
                     uuid: uuid,
                     publicId: player.playerId,
                     currency: player.currency,
@@ -150,10 +145,12 @@ class GameService {
             /* Check data */
             if (player && amount && number) {
 
+                const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
+
                 /* DEBIT REST API FIELDS */
                 const refID = uuidv4()
                 const debitData = {
-                    sid: player.sid,
+                    sid: data.sid,
                     uuid: number,
                     publicId: player.playerId,
                     currency: player.currency,
@@ -189,10 +186,12 @@ class GameService {
             /* Check data */
             if (player && amount && number) {
 
+                const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
+
                 /* CREDIT REST API FIELDS */
                 const refID = uuidv4()
                 const creditData = {
-                    sid: player.sid,
+                    sid: data.sid,
                     uuid: number,
                     publicId: player.playerId,
                     currency: player.currency,
