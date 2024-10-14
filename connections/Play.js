@@ -7,7 +7,10 @@ const GameService = require("../services/GameService")
 const { v4: uuidv4 } = require('uuid')
 
 /* Models */
-const { sequelize, Sequelize, Game } = require("../db/models")
+const { sequelize, Sequelize, Game, Table } = require("../db/models")
+
+/* Table */
+const { TABLE, UID } = require("../config/table")
 
 /* Game */
 const Player = require("../game/Player")
@@ -174,7 +177,11 @@ class Play extends GameService {
 
                     const balance = await this.updateBalance(playerId, socket.player)
 
+                    const table = await Table.findOne({ where: { slug: TABLE, uid: UID } })
+
                     const gameData = {
+                        tableID: table ? table.id : null,
+                        table: table ? table.slug : TABLE,
                         number,
                         player: playerId,
                         startBalance: balance,
@@ -565,33 +572,63 @@ class Play extends GameService {
                 The administrator will be able to continue or end the game, complete and notify about it.
             */
 
+
             /* END GAME EVENT | ADMIN */
             socket.on("end", ({ playerID }) => {
+
+                /* CHECK FIELDS */
                 if (playerID) {
+
+                    /* GET A PLAYER */
                     const player = this.players[playerID]
 
+                    /* CHECK THE PLAYER */
                     if (player) {
-                        this.players[playerID].status = CHOICE
+
+                        /* ASSIGNING END VALUES */
+                        player.status = CHOICE
+
+                        /* CLEAR THE PLAYER DATA */
                         this.clearPlayerData(playerID, player.player)
+
+                        /* SENT TO CLIENT */
                         this.socket.in(player.socketId).emit("forceEnd")
+
+                        /* Update Balance */
+                        this.updateBalance(playerID, player.player)
                     }
                 }
             })
 
             /* NOTIFICATION EVENT | ADMIN */
             socket.on("adminNotification", data => {
+
+                /* CHECK FIELDS */
                 if (data.playerID) {
+
+                    /* GET A PLAYER */
                     const player = this.players[data.playerID]
 
+                    /* CHECK THE PLAYER */
                     if (player) {
+
+                        /* CREATE TIMER */
                         const timer = setTimeout(() => {
+
+                            /* Update Balance */
+                            this.updateBalance(data.playerID, player.player)
+
+                            /* SENT TO CLIENT */
                             this.socket.in(player.socketId).emit("adminNotification", data)
+
+                            /* CLEAR TIMEOUT */
                             clearTimeout(timer)
+
                         }, RECONNECT_TIME)
+
                     }
                 }
             })
-
 
 
         })
@@ -858,7 +895,7 @@ class Play extends GameService {
 
     /* PLAY */
     play = (id, socketPlayer, dealerGame, withPurchase = false) => {
-        
+
         const player = this.players[id]
         const dealerCards = player.dealerCards
         const playerGame = player.playerGame

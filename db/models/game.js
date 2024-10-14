@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Game.init(
         {
+            tableID: DataTypes.BIGINT,
+            table: DataTypes.TEXT,
             number: DataTypes.TEXT,
             player: DataTypes.TEXT,
             startBalance: DataTypes.TEXT,
