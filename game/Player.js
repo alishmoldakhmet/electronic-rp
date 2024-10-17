@@ -169,7 +169,7 @@ class Player extends Game {
             }
 
             return {
-                name: "Hight: " + this.rankList[this.rankList.length - 1],
+                name: "HIGH CARD",
                 code: "NOGAME",
                 level: 0,
                 multiplier: 0,
