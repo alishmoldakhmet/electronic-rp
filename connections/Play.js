@@ -839,9 +839,9 @@ class Play extends GameService {
 
                         if (this.players[id].bonus) {
                             if (hand.bonus) {
-
+                                const playerBonus = parseFloat(this.players[id].bonus)
                                 const maxPay = playerData.player.maxPay ? parseFloat(playerData.player.maxPay) : 0
-                                const win = parseFloat(this.players[id].bonus) * parseFloat(hand.bonus)
+                                const win = playerBonus * parseFloat(hand.bonus) + playerBonus
                                 const total = win >= maxPay ? maxPay : win
 
                                 bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: total }
