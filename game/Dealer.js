@@ -151,7 +151,7 @@ class Dealer extends Game {
             }
             
             return {
-                name: "High: " + this.rankList[this.rankList.length - 1],
+                name: "HIGH CARD",
                 code: "NOGAME",
                 level: 0,
                 multiplier: 0,
