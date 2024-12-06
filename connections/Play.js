@@ -7,10 +7,13 @@ const GameService = require("../services/GameService")
 const { v4: uuidv4 } = require('uuid')
 
 /* Models */
-const { sequelize, Sequelize, Game, Table } = require("../db/models")
+const { sequelize, Sequelize, Game, Table, OperatorBonus } = require("../db/models")
 
 /* Table */
-const { TABLE, UID } = require("../config/table")
+const { TABLE, UID, SERVER } = require("../config/table")
+
+/* Socket IO Client */
+const { io: cIO } = require("socket.io-client")
 
 /* Game */
 const Player = require("../game/Player")
@@ -31,8 +34,7 @@ const RECONNECT_TIME = 3000
 class Play extends GameService {
 
     socket = null
-    isPaused = false
-    isStopped = false
+    centralIO = cIO(SERVER, { auth: { token: `${UID}`, type: `game` } })
 
     status = CHOICE
 
@@ -46,7 +48,14 @@ class Play extends GameService {
 
         this.socket = io
 
+        /* Central Jackpot Listener */
+        this.centralIO.on("cJackpot", data => {
+            io.sockets.emit("jackpot", data)
+        })
+
+        /* Load Cards */
         this.getCards()
+
 
         io.on('connection', socket => {
 
@@ -104,6 +113,8 @@ class Play extends GameService {
 
                         transactions: [],
                         balance: 0,
+
+                        bonusUID: null
                     }
 
                     this.players[playerId] = playerData
@@ -113,37 +124,14 @@ class Play extends GameService {
                 /* Update balance */
                 this.updateBalance(playerId, socket.player)
 
-                // TODO: UPDATE BALANCE
-                // TODO: NEW DEVICE CONNECTION
-
-                // TODO: RECONNECT
-
+                /* Update Jackpot */
+                this.updateJackpot(playerId)
             }
-
-
-            /* ON CONNECT | DEALER */
-            if (socket.isDealer) {
-                //TODO: SEND PLAYER INFO TO DEALER MONITOR
-            }
-
 
             /* ON DISCONNECT | ALL */
             socket.on("disconnect", () => {
                 this.disconnect(socket)
             })
-
-
-
-            /* 
-                DEALER EVENTS
-                All dealer actions
-            */
-
-            /* PAUSE EVENT | DEALER */
-            socket.on("pause", () => {
-
-            })
-
 
 
             /*
@@ -214,6 +202,24 @@ class Play extends GameService {
                         gameProcesses.push({ gameID: created.id, player: playerId, type: 'ante', reason: 'ANTE', total: parseFloat(ante) })
 
                         if (bonus) {
+
+                            /* JACKPOT BONUS */
+                            const bonusUID = `rep-${uuidv4()}`
+                            this.players[playerId].bonusUID = bonusUID
+
+                            const jackpotBonus = {
+                                uid: bonusUID,
+                                operatorID: socket.player.operator.id,
+                                tableID: table ? table.id : null,
+                                table: table ? table.slug : TABLE,
+                                player: playerId,
+                                number,
+                                bids: [parseFloat(bonus)],
+                                currency: socket.player.currency
+                            }
+
+                            this.centralIO.emit("jackpotBonus", jackpotBonus)
+
                             gameProcesses.push({ gameID: created.id, type: 'bonus', reason: 'BONUS', total: parseFloat(bonus) })
                         }
 
@@ -727,6 +733,8 @@ class Play extends GameService {
             result: null,
 
             transactions: [],
+
+            bonusUID: null
         }
 
     }
@@ -820,7 +828,7 @@ class Play extends GameService {
             let card = { ...this.cards[index], uuid }
             let tempCard = { uuid, image: '' }
 
-            setTimeout(() => {
+            setTimeout(async () => {
 
                 if (i % 2 === 0) {
 
@@ -839,12 +847,30 @@ class Play extends GameService {
 
                         if (this.players[id].bonus) {
                             if (hand.bonus) {
+
+                                const bonusUID = this.players[id].bonusUID
+                                const operatorID = this.players[id].player.operator.id
+
+                                const operator = await OperatorBonus.findOne({ where: { operatorID } })
+
                                 const playerBonus = parseFloat(this.players[id].bonus)
-                                const maxPay = playerData.player.maxPay ? parseFloat(playerData.player.maxPay) : 0
-                                const win = playerBonus * parseFloat(hand.bonus) + playerBonus
-                                const total = win >= maxPay ? maxPay : win
+                                const maxPay = operator ? parseFloat(operator.jackpot) : 0
+                                const win = playerBonus * parseFloat(hand.bonus)
+                                const maxWin = win >= maxPay ? maxPay : win
+                                const total = maxWin + playerBonus
 
                                 bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: total }
+
+                                const jackpotWin = {
+                                    uid: bonusUID,
+                                    operatorID: operatorID,
+                                    isJackpot: hand.code === "ROYALFLUSH",
+                                    win: maxWin,
+                                    multiplier: hand.bonus,
+                                    combination: hand.name
+                                }
+
+                                this.centralIO.emit("jackpotWin", jackpotWin)
 
                                 this.players[id].bonusResult = bonusResult
                                 this.updateGameProcess(this.players[id].gameData, "bonus", total)
@@ -972,6 +998,25 @@ class Play extends GameService {
         setTimeout(() => {
             this.socket.in(this.players[id].socketId).emit("status", CHOICE)
         }, RECONNECT_TIME + 7000)
+    }
+
+
+    /* 
+        UPDATE JACKPOT
+        @ BONUS SYSTEM SERVICE 
+    */
+    updateJackpot = async id => {
+        try {
+
+            const player = this.players[id]
+
+            const operator = await OperatorBonus.findOne({ where: { operatorID: player.player.operator.id } })
+
+            this.socket.in(player.socketId).emit("jackpot", operator.jackpot)
+        }
+        catch (error) {
+            this.errorLog(`Error in Play.js - updateJackpot function: ${error.toString()}`)
+        }
     }
 
     /* DISCONNECT */

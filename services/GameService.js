@@ -108,6 +108,7 @@ class GameService {
                 const last = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
                 /* BALANCE REST API FIELDS */
+                const uri = player.operator ? `${player.operator.startpoint}${player.operator.balanceURL}` : null
                 const uuid = uuidv4()
                 const data = {
                     sid: last.sid,
@@ -148,6 +149,7 @@ class GameService {
                 const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
                 /* DEBIT REST API FIELDS */
+                const uri = player.operator ? `${player.operator.startpoint}${player.operator.debitURL}` : null
                 const refID = uuidv4()
                 const debitData = {
                     sid: data.sid,
@@ -160,7 +162,7 @@ class GameService {
                 }
 
                 /* Send request to ALICORN SERVICE */
-                const debit = await sendDebit(debitData)
+                const debit = await sendDebit(uri, debitData)
 
                 return debit
             }
@@ -189,6 +191,7 @@ class GameService {
                 const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
                 /* CREDIT REST API FIELDS */
+                const uri = player.operator ? `${player.operator.startpoint}${player.operator.creditURL}` : null
                 const refID = uuidv4()
                 const creditData = {
                     sid: data.sid,
@@ -201,7 +204,7 @@ class GameService {
                 }
 
                 /* Send request to ALICORN SERVICE */
-                const credit = await sendCredit(creditData)
+                const credit = await sendCredit(uri, creditData)
 
                 return credit
             }

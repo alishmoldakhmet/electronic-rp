@@ -10,11 +10,10 @@ const path = require('path')
 const md5 = require('md5')
 
 /* Tokens */
-const { AUTH_TOKEN } = require("../config/tokens")
 const { TABLE } = require("../config/table")
 
 /* Models */
-const { Player, Table, Currency, TableCurrency } = require("../db/models")
+const { Player, Table, Operator, Currency, TableCurrency } = require("../db/models")
 
 /* Keys */
 const PUBLIC_KEY = fs.readFileSync(path.resolve('config/player/player_public_key.pem'), 'utf8')
@@ -47,8 +46,9 @@ const Bearer = async (socket, next) => {
             try {
                 const decoded = jwt.verify(token, PUBLIC_KEY)
 
+                const operator = await Operator.findOne({ where: { slug: decoded.operator } })
 
-                if (decoded.token === md5(AUTH_TOKEN)) {
+                if (decoded.token === md5(operator.token)) {
 
                     const player = await Player.findOne({ where: { playerId: decoded.playerId }, order: [["id", "DESC"]] })
                     const currency = await Currency.findOne({ where: { code: String(player.currency).toLocaleLowerCase() } })
@@ -68,7 +68,8 @@ const Bearer = async (socket, next) => {
                         gameId: table.slug,
                         max: tc.max,
                         min: tc.min,
-                        maxPay: tc.maxPay
+                        maxPay: tc.maxPay,
+                        operator
                     }
 
                     socket.player = game
