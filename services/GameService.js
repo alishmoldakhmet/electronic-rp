@@ -118,7 +118,7 @@ class GameService {
                     gameId: player.gameId,
                 }
 
-                const response = await balance(data)
+                const response = await balance(uri, data)
 
                 if (response && response.status && response.status === 200 && response.data.status === "OK") {
                     return response.data.balance
