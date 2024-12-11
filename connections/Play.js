@@ -817,7 +817,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = this.numbers(id, length)  //  [1+104, 9+104, 2+104, 34+104, 3+104, 6+104, 4+104, 18+104, 5+104, 10+104]
+        const numbers = this.numbers(id, length)
         numbers.forEach((number, i) => {
 
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
@@ -859,7 +859,7 @@ class Play extends GameService {
                                 const maxWin = win >= maxPay ? maxPay : win
                                 const total = maxWin + playerBonus
 
-                                bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: total }
+                                bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: maxWin, combination: hand.name }
 
                                 const jackpotWin = {
                                     uid: bonusUID,
