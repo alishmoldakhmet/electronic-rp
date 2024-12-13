@@ -7,7 +7,7 @@ const GameService = require("../services/GameService")
 const { v4: uuidv4 } = require('uuid')
 
 /* Models */
-const { sequelize, Sequelize, Game, Table, OperatorBonus } = require("../db/models")
+const { sequelize, Sequelize, Game, Table, OperatorBonus, ExchangeCurrency } = require("../db/models")
 
 /* Table */
 const { TABLE, UID, SERVER } = require("../config/table")
@@ -817,7 +817,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = this.numbers(id, length)
+        const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]//this.numbers(id, length)
         numbers.forEach((number, i) => {
 
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
@@ -850,11 +850,20 @@ class Play extends GameService {
 
                                 const bonusUID = this.players[id].bonusUID
                                 const operatorID = this.players[id].player.operator.id
+                                const currency = this.players[id].player.currency
 
                                 const operator = await OperatorBonus.findOne({ where: { operatorID } })
+                                const jackpot = operator ? parseFloat(operator.jackpot) : 0
+
+                                /* Get Exchange Dollar */
+                                const exchangeDollar = await ExchangeCurrency.findOne({ where: { currency: "USD" } })
+                                const dollarMultiplier = exchangeDollar ? exchangeDollar.multiplier : 1
+
+                                const exchangeCurrency = await ExchangeCurrency.findOne({ where: { currency: currency } })
+                                const exchangeMultiplier = exchangeCurrency ? exchangeCurrency.multiplier : 1
 
                                 const playerBonus = parseFloat(this.players[id].bonus)
-                                const maxPay = operator ? parseFloat(operator.jackpot) : 0
+                                const maxPay = jackpot * exchangeMultiplier / dollarMultiplier
                                 const win = playerBonus * parseFloat(hand.bonus)
                                 const maxWin = win >= maxPay ? maxPay : win
                                 const total = maxWin + playerBonus
