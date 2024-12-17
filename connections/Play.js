@@ -572,6 +572,20 @@ class Play extends GameService {
             })
 
 
+            /* GAME SCREEN ACTION EVENT | PLAYER */
+            socket.on("gameAction", async action => {
+
+                /* FIELDS */
+                const id = socket.player.playerId
+                const player = this.players[id]
+
+                if (player) {
+                    this.setGameAction(player.player, action)
+                }
+
+            })
+
+
             /*
                 ADMIN EVENTS
                 The administrator will be able to continue or end the game, complete and notify about it.

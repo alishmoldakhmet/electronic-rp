@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid')
 
 /* REST API */
 const { sendDebit, sendCredit, balance } = require("../api/PlayerApi")
+const { gameAction } = require("../api/Integration")
 
 
 /* Game Services */
@@ -33,6 +34,48 @@ class GameService {
         }
 
         return true
+    }
+
+
+
+    /* GET BALANCE | REST API */
+    setGameAction = async (player, action) => {
+        try {
+
+
+            /* Check data */
+            if (player) {
+
+                const playerData = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
+
+                /* ACTION REST API FIELDS */
+                const uri = player.operator ? `${player.operator.startpoint}${player.operator.webhookURL}` : null
+
+                const data = {
+                    sid: playerData.sid,
+                    publicId: player.playerId,
+                    gameId: player.gameId,
+                    action
+                }
+
+                if (uri) {
+                    const response = await gameAction(uri, data)
+
+                    if (response && response.status && response.status === 200 && response.data.status === "OK") {
+                        return response.data.balance
+                    }
+                }
+            }
+
+
+            this.errorLog(`Error in GameService.js - setGameAction function: Invalid Data or REST API Error`)
+            return null
+
+        }
+        catch (error) {
+            this.errorLog(`Error in GameService.js - setGameAction function: ${error.toString()}`)
+            return null
+        }
     }
 
 
