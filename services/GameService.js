@@ -38,7 +38,7 @@ class GameService {
 
 
 
-    /* GET BALANCE | REST API */
+    /* SET GAME ACTION | REST API */
     setGameAction = async (player, action) => {
         try {
 
@@ -48,9 +48,20 @@ class GameService {
 
                 const playerData = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
-                /* ACTION REST API FIELDS */
-                const uri = player.operator ? `${player.operator.startpoint}${player.operator.webhookURL}` : null
+                /* CHECK OPERATOR */
+                if (!player.operator) {
+                    this.errorLog(`Error in GameService.js - setGameAction function: Invalid OPERATOR`)
+                    return null
+                }
 
+                /* CHECK OPERATOR LINKS */
+                if (!player.operator.startpoint || !player.operator.webhookURL) {
+                    this.errorLog(`Error in GameService.js - setGameAction function: Invalid OPERATOR LINKS`)
+                    return null
+                }
+
+                /* ACTION REST API FIELDS */
+                const uri = `${player.operator.startpoint}${player.operator.webhookURL}`
                 const data = {
                     sid: playerData.sid,
                     publicId: player.playerId,
@@ -59,6 +70,7 @@ class GameService {
                 }
 
                 if (uri) {
+
                     const response = await gameAction(uri, data)
 
                     if (response && response.status && response.status === 200 && response.data.status === "OK") {
@@ -150,9 +162,22 @@ class GameService {
 
                 const last = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
+                /* CHECK OPERATOR */
+                if (!player.operator) {
+                    this.errorLog(`Error in GameService.js - getBalance function: Invalid OPERATOR`)
+                    return null
+                }
+
+                /* CHECK OPERATOR LINKS */
+                if (!player.operator.startpoint || !player.operator.balanceURL) {
+                    this.errorLog(`Error in GameService.js - getBalance function: Invalid OPERATOR LINKS`)
+                    return null
+                }
+
                 /* BALANCE REST API FIELDS */
-                const uri = player.operator ? `${player.operator.startpoint}${player.operator.balanceURL}` : null
+                const uri = `${player.operator.startpoint}${player.operator.balanceURL}`
                 const uuid = uuidv4()
+
                 const data = {
                     sid: last.sid,
                     uuid: uuid,
@@ -191,9 +216,22 @@ class GameService {
 
                 const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
+                /* CHECK OPERATOR */
+                if (!player.operator) {
+                    this.errorLog(`Error in GameService.js - createDebit function: Invalid OPERATOR`)
+                    return null
+                }
+
+                /* CHECK OPERATOR LINKS */
+                if (!player.operator.startpoint || !player.operator.debitURL) {
+                    this.errorLog(`Error in GameService.js - createDebit function: Invalid OPERATOR LINKS`)
+                    return null
+                }
+
                 /* DEBIT REST API FIELDS */
-                const uri = player.operator ? `${player.operator.startpoint}${player.operator.debitURL}` : null
+                const uri = `${player.operator.startpoint}${player.operator.debitURL}`
                 const refID = uuidv4()
+
                 const debitData = {
                     sid: data.sid,
                     uuid: number,
@@ -233,9 +271,22 @@ class GameService {
 
                 const data = await Player.findOne({ where: { playerId: player.playerId }, order: [["id", "DESC"]] })
 
+                /* CHECK OPERATOR */
+                if (!player.operator) {
+                    this.errorLog(`Error in GameService.js - createCredit function: Invalid OPERATOR`)
+                    return null
+                }
+
+                /* CHECK OPERATOR LINKS */
+                if (!player.operator.startpoint || !player.operator.creditURL) {
+                    this.errorLog(`Error in GameService.js - createCredit function: Invalid OPERATOR LINKS`)
+                    return null
+                }
+
                 /* CREDIT REST API FIELDS */
-                const uri = player.operator ? `${player.operator.startpoint}${player.operator.creditURL}` : null
+                const uri = `${player.operator.startpoint}${player.operator.creditURL}`
                 const refID = uuidv4()
+
                 const creditData = {
                     sid: data.sid,
                     uuid: number,
