@@ -208,13 +208,12 @@ class Play extends GameService {
                             this.players[playerId].bonusUID = bonusUID
 
                             const jackpotBonus = {
-                                uid: bonusUID,
                                 operatorID: socket.player.operator.id,
                                 tableID: table ? table.id : null,
                                 table: table ? table.slug : TABLE,
                                 player: playerId,
                                 number,
-                                bids: [parseFloat(bonus)],
+                                bids: [{ uid: bonusUID, total: parseFloat(bonus) }],
                                 currency: socket.player.currency
                             }
 
