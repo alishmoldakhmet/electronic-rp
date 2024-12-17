@@ -817,7 +817,7 @@ class Play extends GameService {
     /* Generate */
     generate = async (id, length) => {
 
-        const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]//this.numbers(id, length)
+        const numbers = this.numbers(id, length)
         numbers.forEach((number, i) => {
 
             const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
