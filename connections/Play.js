@@ -1034,7 +1034,9 @@ class Play extends GameService {
 
             const operator = await OperatorBonus.findOne({ where: { operatorID: player.player.operator.id } })
 
-            this.socket.in(player.socketId).emit("jackpot", operator.jackpot)
+            if (operator && operator.enabled === 1) {
+                this.socket.in(player.socketId).emit("jackpot", operator.jackpot)
+            }
         }
         catch (error) {
             this.errorLog(`Error in Play.js - updateJackpot function: ${error.toString()}`)
