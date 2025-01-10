@@ -19,8 +19,6 @@ const { Player, Table, Operator, Currency, TableCurrency } = require("../db/mode
 const PUBLIC_KEY = fs.readFileSync(path.resolve('config/player/player_public_key.pem'), 'utf8')
 
 
-
-
 /* MIDDLEWARE BEARER */
 const Bearer = async (socket, next) => {
 

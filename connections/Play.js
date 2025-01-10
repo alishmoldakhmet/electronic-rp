@@ -10,7 +10,7 @@ const { v4: uuidv4 } = require('uuid')
 const { sequelize, Sequelize, Game, Table, OperatorBonus, ExchangeCurrency } = require("../db/models")
 
 /* Table */
-const { TABLE, UID, SERVER } = require("../config/table")
+const { TABLE, UID, SERVER, POSTFIX } = require("../config/table")
 
 /* Socket IO Client */
 const { io: cIO } = require("socket.io-client")
@@ -170,6 +170,7 @@ class Play extends GameService {
                     const gameData = {
                         tableID: table ? table.id : null,
                         table: table ? table.slug : TABLE,
+                        roundId: `${POSTFIX}-${uuidv4()}`,
                         number,
                         player: playerId,
                         startBalance: balance,
@@ -184,7 +185,7 @@ class Play extends GameService {
 
                     const created = await Game.create(gameData)
 
-                    this.players[playerId].gameData = { id: created.id, number: created.number }
+                    this.players[playerId].gameData = { id: created.id, number: created.number, roundId: created.roundId }
 
                     const status = await this.debit(playerId, socket.player, total, statusText, created)
 
@@ -893,7 +894,7 @@ class Play extends GameService {
                                 }
 
                                 this.centralIO.emit("jackpotWin", jackpotWin)
-
+                                
                                 this.players[id].bonusResult = bonusResult
                                 this.updateGameProcess(this.players[id].gameData, "bonus", total)
 
@@ -1085,8 +1086,10 @@ class Play extends GameService {
 
         try {
 
+            const game = this.players[id].gameData
+
             /* Write the TRANSACTION in DB */
-            const transaction = await this.createTransaction("credit", player, amount, reason, this.players[id].gameData)
+            const transaction = await this.createTransaction("credit", player, amount, reason, game)
 
             if (transaction) {
 
@@ -1098,7 +1101,7 @@ class Play extends GameService {
                 }
 
                 /* Send request to ALICORN SERVICE */
-                const credit = await this.createCredit(player, amount, transaction.number)
+                const credit = await this.createCredit(player, amount, transaction.number, game.roundId)
 
                 /* If the request is OK */
                 if (credit && credit.status === 200 && credit.data && credit.data.status === "OK") {
@@ -1153,10 +1156,13 @@ class Play extends GameService {
         MINUS
     */
     debit = async (id, player, amount, reason) => {
+
+        const game = this.players[id].gameData
+
         try {
 
             /* Write the TRANSACTION in DB */
-            const transaction = await this.createTransaction("debit", player, amount, reason, this.players[id].gameData)
+            const transaction = await this.createTransaction("debit", player, amount, reason, game)
 
             if (transaction) {
 
@@ -1168,7 +1174,7 @@ class Play extends GameService {
                 }
 
                 /* Send request to ALICORN SERVICE */
-                const debit = await this.createDebit(player, amount, transaction.number)
+                const debit = await this.createDebit(player, amount, transaction.number, game.roundId)
 
                 /* If the request is OK */
                 if (debit && debit.status === 200 && debit.data && debit.data.status === "OK") {

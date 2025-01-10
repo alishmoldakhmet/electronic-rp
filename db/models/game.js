@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             tableID: DataTypes.BIGINT,
             table: DataTypes.TEXT,
+            roundId: DataTypes.TEXT,
             number: DataTypes.TEXT,
             player: DataTypes.TEXT,
             startBalance: DataTypes.TEXT,
