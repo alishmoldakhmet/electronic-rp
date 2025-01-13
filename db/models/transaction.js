@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             number: DataTypes.TEXT,
             gameID: DataTypes.TEXT,
+            roundId: DataTypes.TEXT,
             player: DataTypes.TEXT,
             status: DataTypes.TINYINT,
             result: DataTypes.TEXT,

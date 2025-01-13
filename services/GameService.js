@@ -105,6 +105,7 @@ class GameService {
                     type,
                     number: uuid,
                     gameID: game.id,
+                    roundId: game.roundId,
                     player: player.playerId,
                     currency: player.currency,
                     reason,
@@ -207,7 +208,7 @@ class GameService {
 
 
     /* CREATE DEBIT | REST API */
-    createDebit = async (player, amount, number) => {
+    createDebit = async (player, amount, number, roundId = null) => {
 
         try {
 
@@ -235,6 +236,7 @@ class GameService {
                 const debitData = {
                     sid: data.sid,
                     uuid: number,
+                    roundId,
                     publicId: player.playerId,
                     currency: player.currency,
                     gameId: player.gameId,
@@ -262,7 +264,7 @@ class GameService {
 
 
     /* CREATE CREDIT | REST API */
-    createCredit = async (player, amount, number) => {
+    createCredit = async (player, amount, number, roundId = null) => {
 
         try {
 
@@ -290,6 +292,7 @@ class GameService {
                 const creditData = {
                     sid: data.sid,
                     uuid: number,
+                    roundId,
                     publicId: player.playerId,
                     currency: player.currency,
                     gameId: player.gameId,
