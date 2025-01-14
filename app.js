@@ -23,7 +23,7 @@ const origin = process.env.FRONT_URL || "*"
 /* Create Server */
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server, { cors: { origin: "*", credentials: true } })
+const io = new Server(server, { cors: { origin, methods: ["GET", "POST"], credentials: true } })
 
 /* Set options */
 app.use(cors({ origin: true, credentials: true }))
