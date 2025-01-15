@@ -1005,8 +1005,8 @@ class Play extends GameService {
         setTimeout(() => {
             this.socket.in(this.players[id].socketId).emit("dealerData", data)
         }, RECONNECT_TIME)
-        
-        // this.endGame(id, socketPlayer)
+
+        this.endGame(id, socketPlayer)
     }
 
     endGame = (id, socketPlayer) => {
