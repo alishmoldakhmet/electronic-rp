@@ -34,7 +34,7 @@ const RECONNECT_TIME = 3000
 class Play extends GameService {
 
     socket = null
-    centralIO = cIO(SERVER, { auth: { token: `${UID}`, type: `game` } })
+    centralIO = cIO(SERVER, { transports: ['websocket'], auth: { token: `${UID}`, type: `game` } })
 
     status = CHOICE
 
@@ -146,7 +146,7 @@ class Play extends GameService {
 
             /* START EVENT | PLAYER */
             socket.on("start", async (data) => {
-                
+
                 const playerId = socket.player.playerId
 
                 const { ante, bonus } = data
