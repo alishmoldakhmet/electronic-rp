@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         {
             tableID: DataTypes.BIGINT,
             table: DataTypes.TEXT,
-            operatorID: DataTypes.TEXT,
+            operatorID: DataTypes.BIGINT,
             roundId: DataTypes.TEXT,
             number: DataTypes.TEXT,
             player: DataTypes.TEXT,
