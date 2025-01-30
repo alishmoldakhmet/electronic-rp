@@ -48,11 +48,6 @@ class Play extends GameService {
 
         this.socket = io
 
-        /* On error */
-        this.centralIO.on("connect_error", error => {
-            console.log(error)
-        })
-
         /* Central Jackpot Listener */
         this.centralIO.on("cJackpot", data => {
             io.sockets.emit("jackpot", data)
