@@ -141,7 +141,7 @@ class Play extends GameService {
 
             /* START EVENT | PLAYER */
             socket.on("start", async (data) => {
-
+                
                 const playerId = socket.player.playerId
 
                 const { ante, bonus } = data
@@ -161,6 +161,9 @@ class Play extends GameService {
                     }
 
                     /* CREATE GAME */
+
+                    const operatorID = socket.player.operator.id
+
                     const number = (new Date()).getMilliseconds() + Math.floor(Math.random() * 100000)
 
                     const balance = await this.updateBalance(playerId, socket.player)
@@ -170,9 +173,11 @@ class Play extends GameService {
                     const gameData = {
                         tableID: table ? table.id : null,
                         table: table ? table.slug : TABLE,
+                        operatorID,
                         roundId: `${POSTFIX}-${uuidv4()}`,
                         number,
                         player: playerId,
+                        currency: socket.player.currency,
                         startBalance: balance,
                         endBalance: 0,
                         refund: 0,
@@ -209,7 +214,7 @@ class Play extends GameService {
                             this.players[playerId].bonusUID = bonusUID
 
                             const jackpotBonus = {
-                                operatorID: socket.player.operator.id,
+                                operatorID: operatorID,
                                 tableID: table ? table.id : null,
                                 table: table ? table.slug : TABLE,
                                 player: playerId,
@@ -894,7 +899,7 @@ class Play extends GameService {
                                 }
 
                                 this.centralIO.emit("jackpotWin", jackpotWin)
-                                
+
                                 this.players[id].bonusResult = bonusResult
                                 this.updateGameProcess(this.players[id].gameData, "bonus", total)
 
