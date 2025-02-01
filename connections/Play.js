@@ -885,9 +885,9 @@ class Play extends GameService {
                                 const maxPay = jackpot * exchangeMultiplier / dollarMultiplier
                                 const win = playerBonus * parseFloat(hand.bonus)
                                 const maxWin = win >= maxPay ? maxPay : win
-                                const total = maxWin
+                                const total = hand.code === "ROYALFLUSH" ? Number.isInteger(maxPay) ? maxPay : Number(maxPay).toFixed(1) : maxWin
 
-                                bonusResult = { result: "win", bonusMultiplier: hand.bonus, total: maxWin, combination: hand.name }
+                                bonusResult = { result: "win", bonusMultiplier: hand.bonus, total, combination: hand.name }
 
                                 const jackpotWin = {
                                     uid: bonusUID,
