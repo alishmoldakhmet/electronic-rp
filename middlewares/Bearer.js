@@ -67,7 +67,8 @@ const Bearer = async (socket, next) => {
                         max: tc.max,
                         min: tc.min,
                         maxPay: tc.maxPay,
-                        operator
+                        operator,
+                        isDemo: decoded.isDemo
                     }
 
                     socket.player = game

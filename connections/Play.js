@@ -65,7 +65,9 @@ class Play extends GameService {
                 const player = { socketId: socket.id, player: socket.player }
                 const playerId = socket.player.playerId
 
-                if (this.players[playerId]) {
+                const gamePlayer = this.players[playerId]
+
+                if (gamePlayer && gamePlayer.isDemo === socket.player.isDemo) {
 
                     if (socket.player.uniqueId !== this.players[playerId].uniqueId) {
                         this.socket.in(this.players[playerId].socketId).emit("newDeviceConnection", "ok")
@@ -112,9 +114,11 @@ class Play extends GameService {
                         result: null,
 
                         transactions: [],
-                        balance: 0,
+                        balance: socket.player.isDemo ? parseInt(socket.player.maxPay) / 4 : 0,
 
-                        bonusUID: null
+                        bonusUID: null,
+
+                        isDemo: socket.player.isDemo
                     }
 
                     this.players[playerId] = playerData
@@ -188,9 +192,13 @@ class Play extends GameService {
                         isUpdated: 0
                     }
 
-                    const created = await Game.create(gameData)
+                    let created = { id: uuidv4(), number, roundId: gameData.roundId, isDemo: true }
 
-                    this.players[playerId].gameData = { id: created.id, number: created.number, roundId: created.roundId }
+                    if (this.players[playerId] && !this.players[playerId].isDemo) {
+                        created = await Game.create(gameData)
+                    }
+
+                    this.players[playerId].gameData = { id: created.id, number: created.number, roundId: created.roundId, isDemo: created.isDemo }
 
                     const status = await this.debit(playerId, socket.player, total, statusText, created)
 
@@ -207,28 +215,32 @@ class Play extends GameService {
 
                         gameProcesses.push({ gameID: created.id, player: playerId, type: 'ante', reason: 'ANTE', total: parseFloat(ante) })
 
-                        if (bonus) {
+                        if (!this.players[playerId].isDemo) {
 
-                            /* JACKPOT BONUS */
-                            const bonusUID = `rep-${uuidv4()}`
-                            this.players[playerId].bonusUID = bonusUID
+                            if (bonus) {
 
-                            const jackpotBonus = {
-                                operatorID: operatorID,
-                                tableID: table ? table.id : null,
-                                table: table ? table.slug : TABLE,
-                                player: playerId,
-                                number,
-                                bids: [{ uid: bonusUID, total: parseFloat(bonus) }],
-                                currency: socket.player.currency
+                                /* JACKPOT BONUS */
+                                const bonusUID = `rep-${uuidv4()}`
+                                this.players[playerId].bonusUID = bonusUID
+
+                                const jackpotBonus = {
+                                    operatorID: operatorID,
+                                    tableID: table ? table.id : null,
+                                    table: table ? table.slug : TABLE,
+                                    player: playerId,
+                                    number,
+                                    bids: [{ uid: bonusUID, total: parseFloat(bonus) }],
+                                    currency: socket.player.currency
+                                }
+
+                                this.centralIO.emit("jackpotBonus", jackpotBonus)
+
+                                gameProcesses.push({ gameID: created.id, type: 'bonus', reason: 'BONUS', total: parseFloat(bonus) })
                             }
 
-                            this.centralIO.emit("jackpotBonus", jackpotBonus)
+                            this.createGameProcesses(gameProcesses)
 
-                            gameProcesses.push({ gameID: created.id, type: 'bonus', reason: 'BONUS', total: parseFloat(bonus) })
                         }
-
-                        this.createGameProcesses(gameProcesses)
 
                     }
                     else {
@@ -1038,6 +1050,10 @@ class Play extends GameService {
 
             const player = this.players[id]
 
+            if (player.isDemo) {
+                return
+            }
+
             const operator = await OperatorBonus.findOne({ where: { operatorID: player.player.operator.id } })
 
             if (operator && operator.enabled === 1) {
@@ -1064,12 +1080,20 @@ class Play extends GameService {
 
             const playerData = this.players[id]
 
-            /* Send request to ALICORN SERVICE */
-            const balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
+            let balance = playerData.balance
+
+            if (!playerData.isDemo) {
+                /* Send request to ALICORN SERVICE */
+                balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
+            }
 
             /* Send the BALANCE to socket client */
             if (balance) {
-                this.players[id].balance = balance
+
+                if (!playerData.isDemo) {
+                    this.players[id].balance = balance
+                }
+
                 this.socket.in(playerData.socketId).emit("balance", balance)
             }
 
@@ -1091,7 +1115,16 @@ class Play extends GameService {
 
         try {
 
-            const game = this.players[id].gameData
+            const playerData = this.players[id]
+            const game = playerData.gameData
+
+            if (playerData.isDemo) {
+                this.players[id].balance = this.players[id].balance + parseInt(amount)
+                setTimeout(() => {
+                    this.updateBalance(id, player)
+                }, 1000)
+                return true
+            }
 
             /* Write the TRANSACTION in DB */
             const transaction = await this.createTransaction("credit", player, amount, reason, game)
@@ -1162,9 +1195,18 @@ class Play extends GameService {
     */
     debit = async (id, player, amount, reason) => {
 
-        const game = this.players[id].gameData
-
         try {
+
+            const playerData = this.players[id]
+            const game = playerData.gameData
+
+            if (playerData.isDemo) {
+                this.players[id].balance = this.players[id].balance - parseInt(amount)
+                setTimeout(() => {
+                    this.updateBalance(id, player)
+                }, 1000)
+                return true
+            }
 
             /* Write the TRANSACTION in DB */
             const transaction = await this.createTransaction("debit", player, amount, reason, game)

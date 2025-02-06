@@ -320,6 +320,10 @@ class GameService {
     /* CREATE GAME CARD | DB */
     createGameCards = (game, cards, type, status) => {
 
+        if (game.isDemo) {
+            return
+        }
+
         let tempCards = []
 
         try {
@@ -345,6 +349,10 @@ class GameService {
     /* UPDATE GAME EXCHANGED CARDS */
     updateGameCards = (game, cards, status) => {
 
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game || !cards) {
@@ -367,6 +375,10 @@ class GameService {
     /* CLEAR GAME CARD | DB */
     clearGameCard = game => {
 
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game) {
@@ -384,6 +396,11 @@ class GameService {
 
     /* CREATE GAME RESULT | DB */
     createGameResult = (game, result, multiplier, type) => {
+
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game || !result || !type) {
@@ -412,6 +429,10 @@ class GameService {
     /* CREATE GAME PROCESS | DB */
     createGameProcess = (game, player, type, reason, total) => {
 
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game || !player || !type || !reason || total === undefined || total === null) {
@@ -429,6 +450,12 @@ class GameService {
 
     /* UPDATE GAME PROCESS */
     updateGameProcess = (game, type, win) => {
+
+        if (game.isDemo) {
+            return
+        }
+
+        
         try {
 
             if (!game || !type || !win) {
@@ -446,6 +473,11 @@ class GameService {
     /* END GAME */
 
     endDbGame = (game) => {
+
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game) {
@@ -462,6 +494,11 @@ class GameService {
 
     /* Continue */
     continueGame = game => {
+
+        if (game.isDemo) {
+            return
+        }
+
         try {
 
             if (!game) {
