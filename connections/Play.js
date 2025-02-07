@@ -729,6 +729,7 @@ class Play extends GameService {
     clearPlayerData = (id, socketPlayer) => {
 
         const socketId = this.players[id].socketId
+        const isDemo = this.players[id].isDemo
 
         this.players[id] = {
             socketId,
@@ -765,7 +766,9 @@ class Play extends GameService {
 
             transactions: [],
 
-            bonusUID: null
+            bonusUID: null,
+
+            isDemo
         }
 
     }
