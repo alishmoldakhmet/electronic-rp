@@ -63,11 +63,11 @@ class Play extends GameService {
             if (socket.player && socket.player.token && socket.player.isPlayer) {
 
                 const player = { socketId: socket.id, player: socket.player }
-                const playerId = socket.player.playerId
+                const playerId = this.getPlayerId(socket.player)
 
                 const gamePlayer = this.players[playerId]
 
-                if (gamePlayer && gamePlayer.isDemo === socket.player.isDemo) {
+                if (gamePlayer) {
 
                     if (socket.player.uniqueId !== this.players[playerId].uniqueId) {
                         this.socket.in(this.players[playerId].socketId).emit("newDeviceConnection", "ok")
@@ -76,6 +76,7 @@ class Play extends GameService {
                     this.players[playerId].socketId = socket.id
                     this.players[playerId].player = socket.player
                     this.players[playerId].uniqueId = socket.player.uniqueId
+                    this.players[playerId].timestamp = Date.now()
 
                     this.reconnection(playerId, 'constructor')
 
@@ -118,10 +119,13 @@ class Play extends GameService {
 
                         bonusUID: null,
 
-                        isDemo: socket.player.isDemo
+                        isDemo: socket.player.isDemo,
+                        timestamp: Date.now()
                     }
 
                     this.players[playerId] = playerData
+
+                    this.checkPlayersAbsense()
 
                 }
 
@@ -146,7 +150,7 @@ class Play extends GameService {
             /* START EVENT | PLAYER */
             socket.on("start", async (data) => {
 
-                const playerId = socket.player.playerId
+                const playerId = this.getPlayerId(socket.player)
 
                 const { ante, bonus } = data
 
@@ -255,7 +259,7 @@ class Play extends GameService {
             /* SIXTH EVENT | PLAYER */
             socket.on("sixth", async () => {
 
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
 
                 const player = this.players[id]
                 if (player) {
@@ -308,7 +312,7 @@ class Play extends GameService {
             /* EXCHANGE EVENT | PLAYER */
             socket.on("exchange", async (exchanged) => {
 
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
 
                 const player = this.players[id]
                 if (player) {
@@ -369,7 +373,7 @@ class Play extends GameService {
 
             /* INSURANCE EVENT | PLAYER */
             socket.on("insurance", async (value) => {
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
                 const player = this.players[id]
                 if (player) {
 
@@ -390,7 +394,7 @@ class Play extends GameService {
             /* BET EVENT | PLAYER */
             socket.on("bet", async () => {
 
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
                 const socketPlayer = socket.player
                 const player = this.players[id]
                 const dealerCards = player.dealerCards
@@ -447,7 +451,7 @@ class Play extends GameService {
             /* PASS EVENT | PLAYER */
             socket.on("pass", async () => {
 
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
                 const player = this.players[id]
                 const dealerCards = player.dealerCards
 
@@ -499,7 +503,7 @@ class Play extends GameService {
             socket.on("purchase", async (data) => {
 
                 /* Fields */
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
                 const socketPlayer = socket.player
                 const player = this.players[id]
 
@@ -594,7 +598,7 @@ class Play extends GameService {
             socket.on("gameAction", async action => {
 
                 /* FIELDS */
-                const id = socket.player.playerId
+                const id = this.getPlayerId(socket.player)
                 const player = this.players[id]
 
                 if (player) {
@@ -669,6 +673,46 @@ class Play extends GameService {
 
 
         })
+
+    }
+
+
+    /* GET PLAYER ID */
+    getPlayerId = (data) => {
+        let id = data.playerId
+        if (data.isDemo) {
+            id = "DEMO" + id
+        }
+        return id
+    }
+
+
+    /* Check players absense */
+    checkPlayersAbsense = () => {
+
+        setTimeout(() => {
+
+            const length = Object.keys(this.players).length
+
+            if (length > 50) {
+                const array = Object.entries(this.players).map(([key, value]) => ({
+                    id: key,
+                    timestamp: value.timestamp
+                }))
+
+                const currentTimestamp = Date.now()
+
+                array.forEach(item => {
+
+                    if (!item.timestamp || currentTimestamp - parseInt(item.timestamp) > 3600000) {
+
+                        this.endDbGame(this.players[item.id].gameData, "timestamp")
+
+                        delete this.players[item.id]
+                    }
+                })
+            }
+        }, 1000)
 
     }
 
@@ -1208,6 +1252,8 @@ class Play extends GameService {
 
             const playerData = this.players[id]
             const game = playerData.gameData
+
+            this.players[id].timestamp = Date.now()
 
             if (playerData.isDemo) {
                 this.players[id].balance = this.players[id].balance - parseInt(amount)

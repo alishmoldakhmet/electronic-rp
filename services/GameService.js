@@ -472,7 +472,7 @@ class GameService {
 
     /* END GAME */
 
-    endDbGame = (game) => {
+    endDbGame = (game, timestamp = null) => {
 
         if (game.isDemo) {
             return
@@ -485,7 +485,13 @@ class GameService {
                 return
             }
 
-            Game.update({ status: 1 }, { where: { id: game.id } })
+            let data = { status: 1 }
+
+            if (timestamp) {
+                data = { status: 1, isUpdated: 1, endReason: "The game ended due to the administrator's initiative" }
+            }
+
+            Game.update(data, { where: { id: game.id } })
         }
         catch (error) {
             this.errorLog(`Error in GameService.js - endGame function: ${error.toString()}`)
