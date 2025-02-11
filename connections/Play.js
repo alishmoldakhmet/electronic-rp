@@ -706,7 +706,9 @@ class Play extends GameService {
 
                     if (!item.timestamp || currentTimestamp - parseInt(item.timestamp) > 3600000) {
 
-                        this.endDbGame(this.players[item.id].gameData, "timestamp")
+                        if (this.players[item.id].gameData) {
+                            this.endDbGame(this.players[item.id].gameData, "timestamp")
+                        }
 
                         delete this.players[item.id]
                     }
@@ -775,6 +777,7 @@ class Play extends GameService {
         const socketId = this.players[id].socketId
         const balance = this.players[id].balance
         const isDemo = this.players[id].isDemo
+        const timestamp = this.players[id].timestamp
 
         if (isDemo !== socketPlayer.isDemo) {
             return
@@ -817,7 +820,8 @@ class Play extends GameService {
 
             bonusUID: null,
             balance,
-            isDemo
+            isDemo,
+            timestamp
         }
 
 

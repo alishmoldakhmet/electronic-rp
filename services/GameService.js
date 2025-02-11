@@ -320,16 +320,16 @@ class GameService {
     /* CREATE GAME CARD | DB */
     createGameCards = (game, cards, type, status) => {
 
-        if (game.isDemo) {
-            return
-        }
-
         let tempCards = []
 
         try {
 
             if (!game || !cards || !type || !status) {
                 this.errorLog(`Error in GameService.js - createGameCard function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
@@ -349,16 +349,16 @@ class GameService {
     /* UPDATE GAME EXCHANGED CARDS */
     updateGameCards = (game, cards, status) => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game || !cards) {
                 this.errorLog(`Error in GameService.js - createGameCard function: Invalid Parameters.`)
                 return
             }
+
+            if (game.isDemo) {
+                return
+            }    
 
             if (Array.isArray(cards) && cards.length > 0) {
                 cards.forEach(card => {
@@ -375,14 +375,14 @@ class GameService {
     /* CLEAR GAME CARD | DB */
     clearGameCard = game => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game) {
                 this.errorLog(`Error in GameService.js - clearGameCard function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
@@ -397,14 +397,14 @@ class GameService {
     /* CREATE GAME RESULT | DB */
     createGameResult = (game, result, multiplier, type) => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game || !result || !type) {
                 this.errorLog(`Error in GameService.js - createGameResult function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
@@ -429,14 +429,14 @@ class GameService {
     /* CREATE GAME PROCESS | DB */
     createGameProcess = (game, player, type, reason, total) => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game || !player || !type || !reason || total === undefined || total === null) {
                 this.errorLog(`Error in GameService.js - createGameCard function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
@@ -450,11 +450,6 @@ class GameService {
 
     /* UPDATE GAME PROCESS */
     updateGameProcess = (game, type, win) => {
-
-        if (game.isDemo) {
-            return
-        }
-
         
         try {
 
@@ -462,6 +457,10 @@ class GameService {
                 this.errorLog(`Error in GameService.js - updateGameProcess function: Invalid Parameters.`)
                 return
             }
+
+            if (game.isDemo) {
+                return
+            }    
 
             GameProcess.update({ win: win }, { where: { gameID: game.id, type: type } })
         }
@@ -474,14 +473,14 @@ class GameService {
 
     endDbGame = (game, timestamp = null) => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game) {
                 this.errorLog(`Error in GameService.js - endGame function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
@@ -501,14 +500,14 @@ class GameService {
     /* Continue */
     continueGame = game => {
 
-        if (game.isDemo) {
-            return
-        }
-
         try {
 
             if (!game) {
                 this.errorLog(`Error in GameService.js - continueGame function: Invalid Parameters.`)
+                return
+            }
+
+            if (game.isDemo) {
                 return
             }
 
