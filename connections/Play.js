@@ -78,6 +78,10 @@ class Play extends GameService {
                     this.players[playerId].uniqueId = socket.player.uniqueId
                     this.players[playerId].timestamp = Date.now()
 
+                    if (socket.player.isDemo) {
+                        this.players[playerId].balance = parseInt(socket.player.maxPay)
+                    }
+
                     this.reconnection(playerId, 'constructor')
 
                 }
@@ -154,7 +158,7 @@ class Play extends GameService {
 
                 const { ante, bonus } = data
 
-                if (this.players[playerId] && !this.players[playerId].ante) {
+                if (this.players[playerId] && !this.players[playerId].ante && this.cards.length > 0) {
 
                     this.players[playerId].socketId = socket.id
 
