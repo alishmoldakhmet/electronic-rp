@@ -251,7 +251,8 @@ class Play extends GameService {
                         this.reconnection(playerId, 'transaction')
                     }
 
-                } else {
+                }
+                else {
                     this.reconnection(playerId, 'error')
                 }
             })
@@ -722,6 +723,7 @@ class Play extends GameService {
     getCards = async () => {
         const sql = `SELECT * FROM Cards`
         const dbCards = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT, raw: true })
+        console.log(dbCards)
         this.cards = dbCards
     }
 
