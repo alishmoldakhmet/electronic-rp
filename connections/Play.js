@@ -7,10 +7,13 @@ const GameService = require("../services/GameService")
 const { v4: uuidv4 } = require('uuid')
 
 /* Models */
-const { sequelize, Sequelize, Game, Table, OperatorBonus, ExchangeCurrency } = require("../db/models")
+const { Game, Table, OperatorBonus, ExchangeCurrency } = require("../db/models")
 
 /* Table */
 const { TABLE, UID, SERVER, POSTFIX } = require("../config/table")
+
+/* Cards */
+const _cards = require("../config/cards")
 
 /* Socket IO Client */
 const { io: cIO } = require("socket.io-client")
@@ -41,7 +44,7 @@ class Play extends GameService {
     /* Fields */
     players = {}
 
-    cards = []
+
 
     constructor(io) {
         super()
@@ -52,10 +55,6 @@ class Play extends GameService {
         this.centralIO.on("cJackpot", data => {
             io.sockets.emit("jackpot", data)
         })
-
-        /* Load Cards */
-        this.getCards()
-
 
         io.on('connection', socket => {
 
@@ -158,7 +157,7 @@ class Play extends GameService {
 
                 const { ante, bonus } = data
 
-                if (this.players[playerId] && !this.players[playerId].ante && this.cards.length > 0) {
+                if (this.players[playerId] && !this.players[playerId].ante && _cards.length > 0) {
 
                     this.players[playerId].socketId = socket.id
 
@@ -280,11 +279,11 @@ class Play extends GameService {
 
                         numbers.forEach(number => {
 
-                            const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
+                            const index = _cards.findIndex(c => parseInt(c.id) === parseInt(number))
 
                             if (index > -1) {
 
-                                const card = { ...this.cards[index], isSixth: true, uuid: uuidv4() }
+                                const card = { ..._cards[index], isSixth: true, uuid: uuidv4() }
 
                                 this.players[id].playerCards.push(card)
                                 this.players[id].used = true
@@ -343,14 +342,14 @@ class Play extends GameService {
 
                         let tempCards = []
                         numbers.forEach((number, i) => {
-                            const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
+                            const index = _cards.findIndex(c => parseInt(c.id) === parseInt(number))
                             if (index > -1) {
                                 setTimeout(() => {
 
-                                    const card = { ...this.cards[index], isExchange: true, uuid: uuidv4() }
+                                    const card = { ..._cards[index], isExchange: true, uuid: uuidv4() }
 
                                     this.players[id].playerCards.push(card)
-                                    tempCards.push(this.cards[index])
+                                    tempCards.push(_cards[index])
 
                                     this.sendCard(id, "player", card)
 
@@ -532,11 +531,11 @@ class Play extends GameService {
 
                             numbers.forEach(number => {
 
-                                const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
+                                const index = _cards.findIndex(c => parseInt(c.id) === parseInt(number))
 
                                 if (index > -1) {
 
-                                    const card = { ...this.cards[index], isPurchase: true, uuid: uuidv4() }
+                                    const card = { ..._cards[index], isPurchase: true, uuid: uuidv4() }
                                     const hand = this.getDealerGame(id)
                                     let purchaseCardArray = [{ id: card.id, image: card.image }]
 
@@ -723,14 +722,6 @@ class Play extends GameService {
 
     }
 
-    /* GET CARDS  FROM DB */
-    getCards = async () => {
-        const sql = `SELECT * FROM Cards`
-        const dbCards = await sequelize.query(sql, { type: Sequelize.QueryTypes.SELECT, raw: true })
-        console.log(dbCards)
-        this.cards = dbCards
-    }
-
     /* RECONNECTION */
     reconnection = (id, reason) => {
 
@@ -885,9 +876,9 @@ class Play extends GameService {
 
             let numbers = []
 
-            let cLength = this.cards.length
-            const min = this.cards[0] ? this.cards[0].id : 1
-            const max = this.cards[cLength - 1] ? this.cards[cLength - 1].id : 52
+            let cLength = _cards.length
+            const min = _cards[0] ? _cards[0].id : 1
+            const max = _cards[cLength - 1] ? _cards[cLength - 1].id : 52
 
             while (numbers.length < length) {
 
@@ -914,12 +905,12 @@ class Play extends GameService {
         const numbers = this.numbers(id, length)
         numbers.forEach((number, i) => {
 
-            const index = this.cards.findIndex(c => parseInt(c.id) === parseInt(number))
+            const index = _cards.findIndex(c => parseInt(c.id) === parseInt(number))
             const playerData = this.players[id]
 
             const uuid = uuidv4()
 
-            let card = { ...this.cards[index], uuid }
+            let card = { ..._cards[index], uuid }
             let tempCard = { uuid, image: '' }
 
             setTimeout(async () => {
