@@ -65,6 +65,7 @@ class Play extends GameService {
                 const playerId = this.getPlayerId(socket.player)
 
                 const gamePlayer = this.players[playerId]
+                const tempBalance = socket.player.isDemo && socket.player.max ? parseInt(socket.player.max) * 20 : 0
 
                 if (gamePlayer) {
 
@@ -78,7 +79,7 @@ class Play extends GameService {
                     this.players[playerId].timestamp = Date.now()
 
                     if (socket.player.isDemo) {
-                        this.players[playerId].balance = parseInt(socket.player.maxPay)
+                        this.players[playerId].balance = tempBalance
                     }
 
                     this.reconnection(playerId, 'constructor')
@@ -118,7 +119,7 @@ class Play extends GameService {
                         result: null,
 
                         transactions: [],
-                        balance: socket.player.isDemo ? parseInt(socket.player.maxPay) / 4 : 0,
+                        balance: tempBalance,
 
                         bonusUID: null,
 
