@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
             dealer: DataTypes.TEXT,
             gameURL: DataTypes.TEXT,
             backURL: DataTypes.TEXT,
-            hlsURL: DataTypes.TEXT,
             dealerMonitorToken: DataTypes.TEXT,
             dealerSocketToken: DataTypes.TEXT,
             scannerToken: DataTypes.TEXT,
