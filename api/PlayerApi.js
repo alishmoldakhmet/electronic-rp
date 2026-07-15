@@ -18,4 +18,10 @@ const sendCredit = (uri, data) => {
     return axios.post(uri, data, headers).then(response => response).catch(data => data.response)
 }
 
-module.exports = { balance, sendDebit, sendCredit }
+/* CLOSE ROUND */
+const sendCloseRound = (uri, data) => {
+    const headers = { headers: { 'content-type': 'application/x-www-form-urlencoded' } }
+    return axios.post(uri, data, headers).then(response => response).catch(data => data.response)
+}
+
+module.exports = { balance, sendDebit, sendCredit, sendCloseRound }

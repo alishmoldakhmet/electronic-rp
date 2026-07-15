@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             debitURL: DataTypes.TEXT,
             creditURL: DataTypes.TEXT,
             webhookURL: DataTypes.TEXT,
+            roundCloseURL: DataTypes.TEXT,
         },
         {
             sequelize,

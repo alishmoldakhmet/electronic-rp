@@ -8,7 +8,7 @@ const { TABLE } = require("../config/table")
 const { v4: uuidv4 } = require('uuid')
 
 /* REST API */
-const { sendDebit, sendCredit, balance } = require("../api/PlayerApi")
+const { sendDebit, sendCredit, balance, sendCloseRound } = require("../api/PlayerApi")
 const { gameAction } = require("../api/Integration")
 
 
@@ -88,6 +88,29 @@ class GameService {
             this.errorLog(`Error in GameService.js - setGameAction function: ${error.toString()}`)
             return null
         }
+    }
+
+
+    /* NOTIFY OPERATOR ABOUT ROUND CLOSE */
+    sendRoundClose = async (player, gameData) => {
+
+        try {
+
+            /* Check data */
+            const operator = player && player.operator
+            const roundId = gameData && gameData.roundId
+            if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
+                return
+            }
+
+            /* Send close round request to operator */
+            await sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
+
+        }
+        catch (error) {
+            this.errorLog(`Error in GameService.js - sendRoundClose function: ${error.toString()}`)
+        }
+
     }
 
 

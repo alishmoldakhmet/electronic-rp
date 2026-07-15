@@ -1085,6 +1085,9 @@ class Play extends GameService {
 
         this.endDbGame(this.players[id].gameData)
 
+        /* Notify operator about round close */
+        this.sendRoundClose(socketPlayer, this.players[id].gameData)
+
         setTimeout(() => {
             this.players[id].status = CHOICE
             this.clearPlayerData(id, socketPlayer)
