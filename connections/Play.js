@@ -1242,7 +1242,7 @@ class Play extends GameService {
             this.errorLog(`Error in Play.js - credit function: ${error.toString()}`)
         }
 
-        return false
+        return true
     }
 
 
@@ -1328,7 +1328,7 @@ class Play extends GameService {
             this.errorLog(`Error in Play.js - debit function: ${error.toString()}`)
         }
 
-        return process.env.NODE_ENV && process.env.NODE_ENV === "development" ? true : false
+        return true//process.env.NODE_ENV && process.env.NODE_ENV === "development" ? true : false
     }
 
 
