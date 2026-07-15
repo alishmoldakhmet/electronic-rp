@@ -1140,17 +1140,17 @@ class Play extends GameService {
 
             let balance = playerData.balance
 
-            if (!playerData.isDemo) {
-                /* Send request to ALICORN SERVICE */
-                balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
-            }
+            //if (!playerData.isDemo) {
+            /* Send request to ALICORN SERVICE */
+            balance = 100000// process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
+            //}
 
             /* Send the BALANCE to socket client */
             if (balance) {
 
-                if (!playerData.isDemo) {
-                    this.players[id].balance = balance
-                }
+                //if (!playerData.isDemo) {
+                this.players[id].balance = balance
+                //}
 
                 this.socket.in(playerData.socketId).emit("balance", balance)
             }
