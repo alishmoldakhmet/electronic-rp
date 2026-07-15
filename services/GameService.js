@@ -103,7 +103,7 @@ class GameService {
             console.log(operator, roundId)
             console.log(!roundId || (gameData/* && gameData.isDemo*/) || !operator || !operator.startpoint || !operator.roundCloseURL)
 
-            if (!roundId || (gameData/* && gameData.isDemo*/) || !operator || !operator.startpoint || !operator.roundCloseURL) {
+            if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
                 return
             }
 
