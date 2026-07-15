@@ -106,6 +106,8 @@ class GameService {
                 return
             }
 
+            console.log(`${operator.startpoint}${operator.roundCloseURL}`)
+
             /* Send close round request to operator */
             const res = await sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
             console.log(res)
