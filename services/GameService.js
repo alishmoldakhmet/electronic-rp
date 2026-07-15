@@ -112,6 +112,7 @@ class GameService {
 
         }
         catch (error) {
+            console.log(error)
             this.errorLog(`Error in GameService.js - sendRoundClose function: ${error.toString()}`)
         }
 
