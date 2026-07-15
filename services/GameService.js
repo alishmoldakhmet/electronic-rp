@@ -99,12 +99,14 @@ class GameService {
             /* Check data */
             const operator = player && player.operator
             const roundId = gameData && gameData.roundId
+
             if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
                 return
             }
 
             /* Send close round request to operator */
-            await sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
+            const res = await sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
+            console.log(res)
 
         }
         catch (error) {
@@ -381,7 +383,7 @@ class GameService {
 
             if (game.isDemo) {
                 return
-            }    
+            }
 
             if (Array.isArray(cards) && cards.length > 0) {
                 cards.forEach(card => {
@@ -473,7 +475,7 @@ class GameService {
 
     /* UPDATE GAME PROCESS */
     updateGameProcess = (game, type, win) => {
-        
+
         try {
 
             if (!game || !type || !win) {
@@ -483,7 +485,7 @@ class GameService {
 
             if (game.isDemo) {
                 return
-            }    
+            }
 
             GameProcess.update({ win: win }, { where: { gameID: game.id, type: type } })
         }
