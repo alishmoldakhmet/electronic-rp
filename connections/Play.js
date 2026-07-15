@@ -202,7 +202,7 @@ class Play extends GameService {
 
                     let created = { id: uuidv4(), number, roundId: gameData.roundId, isDemo: true }
 
-                    if (this.players[playerId]/* && !this.players[playerId].isDemo*/) {
+                    if (this.players[playerId] && !this.players[playerId].isDemo) {
                         created = await Game.create(gameData)
                     }
 
@@ -1140,17 +1140,17 @@ class Play extends GameService {
 
             let balance = playerData.balance
 
-            //if (!playerData.isDemo) {
-            /* Send request to ALICORN SERVICE */
-            balance = 100000// process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
-            //}
+            if (!playerData.isDemo) {
+                /* Send request to ALICORN SERVICE */
+                balance = process.env.NODE_ENV && process.env.NODE_ENV === "development" ? 23700000 : await this.getBalance(player)
+            }
 
             /* Send the BALANCE to socket client */
             if (balance) {
 
-                //if (!playerData.isDemo) {
-                this.players[id].balance = balance
-                //}
+                if (!playerData.isDemo) {
+                    this.players[id].balance = balance
+                }
 
                 this.socket.in(playerData.socketId).emit("balance", balance)
             }
@@ -1242,7 +1242,7 @@ class Play extends GameService {
             this.errorLog(`Error in Play.js - credit function: ${error.toString()}`)
         }
 
-        return true
+        return false
     }
 
 
@@ -1328,7 +1328,7 @@ class Play extends GameService {
             this.errorLog(`Error in Play.js - debit function: ${error.toString()}`)
         }
 
-        return true//process.env.NODE_ENV && process.env.NODE_ENV === "development" ? true : false
+        return process.env.NODE_ENV && process.env.NODE_ENV === "development" ? true : false
     }
 
 
