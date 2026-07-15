@@ -202,7 +202,7 @@ class Play extends GameService {
 
                     let created = { id: uuidv4(), number, roundId: gameData.roundId, isDemo: true }
 
-                    if (this.players[playerId] && !this.players[playerId].isDemo) {
+                    if (this.players[playerId]/* && !this.players[playerId].isDemo*/) {
                         created = await Game.create(gameData)
                     }
 

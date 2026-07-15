@@ -100,7 +100,7 @@ class GameService {
             const operator = player && player.operator
             const roundId = gameData && gameData.roundId
 
-            if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
+            if (!roundId || (gameData/* && gameData.isDemo*/) || !operator || !operator.startpoint || !operator.roundCloseURL) {
                 return
             }
 
