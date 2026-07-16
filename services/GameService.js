@@ -8,7 +8,7 @@ const { TABLE } = require("../config/table")
 const { v4: uuidv4 } = require('uuid')
 
 /* REST API */
-const { sendDebit, sendCredit, balance } = require("../api/PlayerApi")
+const { sendDebit, sendCredit, balance, sendCloseRound } = require("../api/PlayerApi")
 const { gameAction } = require("../api/Integration")
 
 
