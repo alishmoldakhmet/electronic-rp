@@ -91,6 +91,30 @@ class GameService {
     }
 
 
+    /* NOTIFY OPERATOR ABOUT ROUND CLOSE */
+    sendRoundClose = async (player, gameData) => {
+
+        try {
+
+            /* Check data */
+            const operator = player && player.operator
+            const roundId = gameData && gameData.roundId
+
+            if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
+                return
+            }
+
+            /* Send close round request to operator */
+            sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
+
+        }
+        catch (error) {
+            this.errorLog(`Error in GameService.js - sendRoundClose function: ${error.toString()}`)
+        }
+
+    }
+
+
     /* CREATE TRANSACTION | DB */
     createTransaction = async (type, player, amount, reason, game) => {
 
