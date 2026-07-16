@@ -100,9 +100,13 @@ class GameService {
             const operator = player && player.operator
             const roundId = gameData && gameData.roundId
 
+            console.log(operator, roundId)
+            console.log("re", !roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL)
             if (!roundId || (gameData && gameData.isDemo) || !operator || !operator.startpoint || !operator.roundCloseURL) {
                 return
             }
+
+            console.log(`${operator.startpoint}${operator.roundCloseURL}`)
 
             /* Send close round request to operator */
             const response = await sendCloseRound(`${operator.startpoint}${operator.roundCloseURL}`, { roundId })
@@ -110,6 +114,7 @@ class GameService {
 
         }
         catch (error) {
+            console.log(error)
             this.errorLog(`Error in GameService.js - sendRoundClose function: ${error.toString()}`)
         }
 
