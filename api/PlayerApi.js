@@ -20,7 +20,7 @@ const sendCredit = (uri, data) => {
 
 /* CLOSE ROUND */
 const sendCloseRound = (uri, data) => {
-    const headers = { headers: { 'content-type': 'application/x-www-form-urlencoded' } }
+    const headers = { headers: { 'content-type': 'application/x-www-form-urlencoded' }, timeout: 5000 }
     return axios.post(uri, data, headers).then(response => response).catch(data => data.response)
 }
 
